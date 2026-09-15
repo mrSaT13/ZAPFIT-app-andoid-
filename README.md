@@ -56,7 +56,9 @@ Application ID — `com.dev.zapfit`.
 
 Приложение подключается к серверу по протоколу Endurain API (адрес задаётся в настройках).
 Есть режим совместимости с оригинальным сервером и расширенный ZAPFIT-режим метрик
-(VO2max, TSS, TRIMP). Сервер ZAPFIT публикуется отдельным репозиторием.
+(VO2max, TSS, TRIMP).
+
+[![Server repo](https://img.shields.io/badge/server-mrSaT13%2FserverZAPPFIT-02569B?logo=github)](https://github.com/mrSaT13/serverZAPPFIT)
 
 ## Структура проекта
 
