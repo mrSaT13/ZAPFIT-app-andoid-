@@ -31,7 +31,7 @@ Material You и глубокая интеграция с Android (виджеты
 - Android: SDK 34, JDK 17, `minSdk 26`
 - Для iOS/macOS: Xcode; для Windows: Visual Studio с C++-тулчейном
 
-Проверено: сборка `app-debug.apk` из чистого клона на Flutter 3.44.4.
+Проверено на Flutter 3.44.4.
 
 ## Быстрый старт
 
@@ -43,15 +43,14 @@ flutter run                        # запуск в отладке
 flutter build apk --debug          # отладочный APK, ключи не нужны
 ```
 
-Релизная подпись — через локальный (не коммитится) `android/key.properties`:
+## Подпись релиза
 
 ```bash
 cp android/key.properties.example android/key.properties  # заполнить своим keystore
 flutter build apk --release
 ```
 
-Application ID — `com.dev.zapfit`, конфликтов с оригинальным Endurain (`com.dev.endurain`) нет,
-оба приложения ставятся рядом.
+Application ID — `com.dev.zapfit`.
 
 ## Сервер
 
