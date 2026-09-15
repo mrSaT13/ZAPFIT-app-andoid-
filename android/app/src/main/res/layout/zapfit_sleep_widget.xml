@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_background"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ZAPFIT Сон"
+        android:textSize="12sp"
+        android:textColor="#AAAAAA"
+        android:layout_marginBottom="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/widget_sleep_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="32sp"
+                android:textColor="#7C4DFF"
+                android:fontFamily="sans-serif-bold"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="баллов"
+                android:textSize="10sp"
+                android:textColor="#AAAAAA"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical"
+            android:paddingStart="12dp">
+
+            <TextView
+                android:id="@+id/widget_sleep_range"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--:-- – --:--"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/widget_sleep_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0ч 0м"
+                android:textSize="12sp"
+                android:textColor="#AAAAAA"
+                android:layout_marginTop="2dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:id="@+id/widget_sleep_deep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Г: 0м"
+                    android:textSize="10sp"
+                    android:textColor="#5C6BC0"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/widget_sleep_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Л: 0м"
+                    android:textSize="10sp"
+                    android:textColor="#9FA8DA"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/widget_sleep_rem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="REM: 0м"
+                    android:textSize="10sp"
+                    android:textColor="#7E57C2" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_update"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="9sp"
+        android:textColor="#666666"
+        android:layout_marginTop="4dp"
+        android:gravity="center" />
+</LinearLayout>

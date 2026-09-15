@@ -1,0 +1,6 @@
+# Local Gradle overrides (example, git-ignored).
+# android/gradle.properties is committed with clean defaults; put machine-specific
+# settings (e.g. JDK path) into %USERPROFILE%\.gradle\gradle.properties instead.
+# Example:
+# org.gradle.java.home=C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.19.10-hotspot
+# org.gradle.jvmargs=-Xmx6G

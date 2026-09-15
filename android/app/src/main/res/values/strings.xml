@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZAPFIT</string>
+    <string name="widget_daily_description">Шаги за сегодня с прогрессом к цели</string>
+    <string name="widget_summary_description">Сводка за день: шаги, дистанция, вода</string>
+    <string name="widget_sleep_description">Последний сон: балл, время, фазы</string>
+    <string name="widget_hr_description">Текущий, покойный и максимальный пульс</string>
+</resources>

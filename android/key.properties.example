@@ -1,0 +1,8 @@
+# Android signing config — EXAMPLE ONLY, never commit real passwords.
+# Copy to android/key.properties (git-ignored) and fill locally.
+# Real file lives only in D:\apktrack\local_only\ (never in git).
+
+storeFile=C:\\secure\\path\\release.keystore
+storePassword=CHANGE_ME
+keyAlias=CHANGE_ME
+keyPassword=CHANGE_ME

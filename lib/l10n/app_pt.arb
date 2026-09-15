@@ -1,0 +1,423 @@
+﻿{
+  "@@locale": "pt",
+  "@@context": "ZAPFIT mobile - Traduções em português organizadas por funcionalidade",
+  "@sectionCommon": "=== COMUM / PARTILHADO (core/utils/dialog_utils.dart, core/utils/validators.dart) ===",
+  "error": "Erro",
+  "@error": {
+    "description": "Título de erro genérico - Usado em: dialog_utils.dart"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Rótulo do botão OK - Usado em: dialog_utils.dart"
+  },
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Rótulo do botão Cancelar - Usado em: dialog_utils.dart, server_settings_screen.dart"
+  },
+  "save": "Guardar",
+  "@save": {
+    "description": "Rótulo do botão Guardar - Usado em: server_settings_screen.dart"
+  },
+  "back": "Voltar",
+  "@back": {
+    "description": "Rótulo do botão Voltar - Usado em: login_screen.dart"
+  },
+  "requiredField": "Este campo é obrigatório",
+  "@requiredField": {
+    "description": "Mensagem de validação para campos obrigatórios - Usado em: validators.dart"
+  },
+  "invalidUrl": "Por favor, insira um URL válido",
+  "@invalidUrl": {
+    "description": "Mensagem de validação para URL inválido - Usado em: validators.dart"
+  },
+  "@sectionAuth": "=== AUTENTICAÇÃO (features/auth/login_screen.dart) ===",
+  "loginTitle": "Login",
+  "@loginTitle": {
+    "description": "Título do ecrã de login"
+  },
+  "login": "Entrar",
+  "@login": {
+    "description": "Rótulo do botão de login"
+  },
+  "logout": "Sair",
+  "@logout": {
+    "description": "Rótulo do botão de logout - Usado em: settings_screen.dart, server_settings_screen.dart"
+  },
+  "logoutConfirmTitle": "Sair",
+  "@logoutConfirmTitle": {
+    "description": "Título do diálogo de confirmação de logout - Usado em: dialog_utils.dart (via server_settings_screen)"
+  },
+  "logoutConfirmMessage": "Tem certeza que deseja sair?",
+  "@logoutConfirmMessage": {
+    "description": "Mensagem do diálogo de confirmação de logout - Usado em: server_settings_screen.dart"
+  },
+  "logoutServerFailedWarning": "Não foi possível sair do servidor, mas saiu localmente",
+  "@logoutServerFailedWarning": {
+    "description": "Aviso exibido quando o logout do servidor falha mas o logout local é bem-sucedido - Usado em: server_settings_screen.dart"
+  },
+  "retry": "Tentar Novamente",
+  "@retry": {
+    "description": "Rótulo do botão de tentar novamente - Usado em: sso_webview_screen.dart"
+  },
+  "ssoWebViewTitle": "Entrar",
+  "@ssoWebViewTitle": {
+    "description": "Título da tela WebView SSO - Usado em: sso_webview_screen.dart"
+  },
+  "ssoCancel": "Cancelar",
+  "@ssoCancel": {
+    "description": "Rótulo do botão de cancelar SSO - Usado em: sso_webview_screen.dart"
+  },
+  "ssoSignInWith": "Entrar com {provider}",
+  "@ssoSignInWith": {
+    "description": "Rótulo do botão de provedor SSO - Usado em: login_screen.dart",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Google"
+      }
+    }
+  },
+  "ssoOrDivider": "OU",
+  "@ssoOrDivider": {
+    "description": "Texto divisor entre SSO e login tradicional - Usado em: login_screen.dart"
+  },
+  "next": "Próximo",
+  "@next": {
+    "description": "Rótulo do botão próximo para fluxos de várias etapas - Usado em: login_screen.dart"
+  },
+  "username": "Nome de utilizador",
+  "@username": {
+    "description": "Rótulo do campo de nome de utilizador - Usado em: login_screen.dart, server_settings_screen.dart"
+  },
+  "usernameHint": "Insira o seu nome de utilizador",
+  "@usernameHint": {
+    "description": "Texto de dica do campo de nome de utilizador"
+  },
+  "password": "Palavra-passe",
+  "@password": {
+    "description": "Rótulo do campo de palavra-passe - Usado em: login_screen.dart"
+  },
+  "passwordHint": "Insira a sua palavra-passe",
+  "@passwordHint": {
+    "description": "Texto de dica do campo de palavra-passe"
+  },
+  "showPassword": "Mostrar senha",
+  "@showPassword": {
+    "description": "Rótulo da alternância de mostrar/ocultar palavra-passe"
+  },
+  "mfaTitle": "Autenticação de Dois Fatores",
+  "@mfaTitle": {
+    "description": "Título do ecrã de MFA"
+  },
+  "mfaCode": "Código MFA",
+  "@mfaCode": {
+    "description": "Rótulo do campo de código MFA"
+  },
+  "mfaCodeHint": "Insira o código de 6 dígitos",
+  "@mfaCodeHint": {
+    "description": "Texto de dica do campo de código MFA"
+  },
+  "mfaCodeRequired": "Por favor, insira o código MFA",
+  "@mfaCodeRequired": {
+    "description": "Mensagem de erro de validação do código MFA"
+  },
+  "verify": "Verificar",
+  "@verify": {
+    "description": "Rótulo do botão de verificação MFA"
+  },
+  "@sectionMap": "=== MAPA (features/map/map_screen.dart) ===",
+  "mapTab": "Mapa",
+  "@mapTab": {
+    "description": "Rótulo da aba do mapa - Usado em: app_bottom_nav.dart"
+  },
+  "activitiesTab": "Atividades",
+  "@activitiesTab": {
+    "description": "Rótulo da aba de atividades - Usado em: app_bottom_nav.dart"
+  },
+  "@sectionSettings": "=== CONFIGURAÇÕES (features/settings/) ===",
+  "settingsTab": "Configurações",
+  "@settingsTab": {
+    "description": "Rótulo da aba de configurações - Usado em: app_bottom_nav.dart"
+  },
+  "settingsScreen": "Configurações",
+  "@settingsScreen": {
+    "description": "Título do ecrã de configurações - Usado em: settings_screen.dart"
+  },
+  "serverSettings": "Servidor",
+  "@serverSettings": {
+    "description": "Rótulo de navegação para configurações do servidor - Usado em: settings_screen.dart"
+  },
+  "serverSettingsTitle": "Definições do servidor",
+  "@serverSettingsTitle": {
+    "description": "Título do ecrã de configurações do servidor - Usado em: server_settings_screen.dart"
+  },
+  "loggedIn": "Autenticado",
+  "@loggedIn": {
+    "description": "Cabeçalho da secção de autenticação - Usado em: server_settings_screen.dart"
+  },
+  "serverUrl": "URL do servidor",
+  "@serverUrl": {
+    "description": "Rótulo do campo de URL do servidor - Usado em: login_screen.dart, server_settings_screen.dart"
+  },
+  "serverUrlHint": "https://example.com",
+  "@serverUrlHint": {
+    "description": "Texto de dica do campo de URL do servidor - Usado em: login_screen.dart"
+  },
+  "tileServerUrl": "URL do servidor de mapas",
+  "@tileServerUrl": {
+    "description": "Rótulo do campo de URL do servidor de mapas - Usado em: server_settings_screen.dart"
+  },
+  "tileServerUrlHint": "https://tile.openstreetmap.org/...",
+  "@tileServerUrlHint": {
+    "description": "Texto de dica do campo de URL do servidor de mapas"
+  },
+  "savedSuccessfully": "Definições guardadas com sucesso",
+  "@savedSuccessfully": {
+    "description": "Mensagem de sucesso ao guardar configurações - Usado em: server_settings_screen.dart"
+  },
+  "language": "Idioma",
+  "@language": {
+    "description": "Rótulo da configuração de idioma - Usado em: settings_screen.dart"
+  },
+  "languageSystem": "Padrão do sistema",
+  "@languageSystem": {
+    "description": "Opção de idioma do sistema - Usado em: settings_screen.dart"
+  },
+  "languageEnglish": "Inglês",
+  "@languageEnglish": {
+    "description": "Opção de idioma inglês - Usado em: settings_screen.dart"
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Opção de idioma português - Usado em: settings_screen.dart"
+  },
+  "languageRussian": "Russo",
+  "@languageRussian": {
+    "description": "Opção de idioma russo - Usado em: settings_screen.dart"
+  },
+  "activitiesTitle": "Atividades",
+  "activityDetailsTitle": "Detalhes da atividade",
+  "activityType": "Tipo",
+  "activityDistance": "Distância",
+  "activityDuration": "Duração",
+  "activityPoints": "Pontos GPS",
+  "activityUploadStatus": "Estado do envio",
+  "activityKindRunning": "Corrida",
+  "activityKindCycling": "Ciclismo",
+  "activityKindWalking": "Caminhada",
+  "activityKindHiking": "Trilho",
+  "activityKindWorkout": "Treino",
+  "uploadStatusPending": "Pendente",
+  "uploadStatusUploaded": "Enviado",
+  "uploadStatusFailed": "Falhou",
+  "importGpx": "Importar GPX",
+  "importFailed": "Falha na importação",
+  "exportFailed": "Falha na exportação",
+  "uploadFailed": "Falha no envio",
+  "activityUploaded": "Atividade enviada",
+  "noActivitiesYet": "Sem atividades ainda",
+  "edit": "Editar",
+  "delete": "Apagar",
+  "upload": "Enviar",
+  "exportGpx": "Exportar GPX",
+  "editActivityTitle": "Editar atividade",
+  "deleteActivityTitle": "Apagar atividade",
+  "deleteActivityMessage": "Apagar atividade",
+  "activityTitle": "Título",
+  "activityNotes": "Notas",
+  "trackingActive": "A registar:",
+  "trackerIdle": "Rastreador inativo",
+  "averageSpeed": "Velocidade média",
+  "cacheArea": "Cache",
+  "selectArea": "Selecionar área",
+  "selectAreaEnabled": "Área selecionada",
+  "cachedTiles": "Tiles em cache",
+  "cacheError": "Erro de cache",
+  "start": "Iniciar",
+  "stop": "Parar",
+  "pause": "Pausar",
+  "resume": "Retomar",
+  "startActivity": "Iniciar atividade",
+  "stopActivity": "Parar atividade",
+  "stopActivityConfirm": "Terminar e guardar a atividade atual?",
+  "myLocation": "Minha localização",
+  "settingsUpdated": "Definições atualizadas",
+  "bluetoothSensors": "Sensores Bluetooth",
+  "scan": "Pesquisar",
+  "savedDevices": "Dispositivos guardados",
+  "noSavedSensors": "Sem sensores guardados",
+  "nearbyDevices": "Dispositivos próximos",
+  "unknownDevice": "Dispositivo desconhecido",
+  "add": "Adicionar",
+  "appearance": "Aparência",
+  "themeMode": "Modo de tema",
+  "themeSystem": "Sistema",
+  "themeLight": "Claro",
+  "themeDark": "Escuro",
+  "gpsTracking": "GPS e rastreamento",
+  "gpsAccuracyMode": "Modo de precisão",
+  "gpsAccuracyHigh": "Alta (GPS)",
+  "gpsAccuracyBalanced": "Equilibrada (GPS + rede)",
+  "gpsAccuracyLow": "Pouca energia",
+  "minDistanceBetweenPoints": "Distância mínima entre pontos",
+  "syncAndCache": "Sincronização e cache",
+  "uploadEndpoint": "Endpoint de envio",
+  "apiPassword": "Palavra-passe da API",
+  "apiPasswordHint": "Insira a palavra-passe da API gerada no servidor",
+  "mapCacheFolder": "Pasta de cache de mapa",
+  "saveTrackingSettings": "Guardar definições de rastreamento",
+  "notConfigured": "Não configurado",
+  "notLoggedIn": "Sem sessão iniciada",
+  "tabRecord": "Gravar",
+  "tabHistory": "Histórico",
+  "tabGear": "Equipamento",
+  "profileTab": "Perfil",
+  "themeTab": "Tema",
+  "mapSettingsTab": "Mapa",
+  "coachTab": "Treinador",
+  "systemTab": "Sistema",
+  "profileAnonymous": "Anónimo",
+  "profilePersonalData": "Dados pessoais",
+  "profileHeight": "Altura (cm)",
+  "profileWeight": "Peso (kg)",
+  "profileCity": "Cidade",
+  "profileMaxHr": "Freq. cardíaca máx.",
+  "profileGender": "Género",
+  "profileMale": "Masculino",
+  "profileFemale": "Feminino",
+  "profileNA": "N/D",
+  "profileLoading": "A carregar...",
+  "profileRefresh": "Atualizar do servidor",
+  "dynamicColor": "Cor dinâmica (Android 12+)",
+  "accentColor": "Cor de destaque",
+  "pickColor": "Escolher cor",
+  "bgColor": "Cor de fundo",
+  "enableGradient": "Ativar gradiente",
+  "gradientColor": "Cor do gradiente",
+  "topographicMap": "Mapa topográfico",
+  "mapTheme": "Tema do mapa",
+  "mapThemeAuto": "Auto",
+  "mapThemeLight": "Claro",
+  "mapThemeDark": "Escuro",
+  "matchSystemTheme": "Seguir tema do sistema",
+  "mapBehavior": "Comportamento do mapa durante registo",
+  "mapBehaviorDesc": "Controla como o mapa reage ao seu movimento durante uma sessão de registo.",
+  "mapBehaviorOff": "Desativado",
+  "mapBehaviorOffDesc": "Mapa fica parado",
+  "mapBehaviorFollow": "Seguir localização",
+  "mapBehaviorFollowDesc": "Centrar na posição GPS",
+  "mapBehaviorFollowHeading": "Seguir + orientação",
+  "mapBehaviorFollowHeadingDesc": "Rodar mapa com bússola",
+  "gpsAccuracy": "Precisão",
+  "distanceFilter": "Filtro de distância (m)",
+  "meters": "metros",
+  "mapCache": "Cache do mapa",
+  "cacheFolder": "Pasta de cache",
+  "voiceCoach": "Treinador de voz",
+  "voiceGender": "Género da voz",
+  "speechRate": "Velocidade da fala",
+  "volume": "Volume",
+  "twoFactorAuth": "Autenticação de dois fatores (MFA)",
+  "mfaSecretHelper": "Chave secreta TOTP para autenticação de dois fatores",
+  "mfaSecretDesc": "Se tem 2FA ativado na sua conta, guarde o segredo TOTP (do autenticador) aqui para o app gerar códigos de verificação automaticamente.",
+  "dataUpload": "Envio de dados",
+  "clearLocalCache": "Limpar cache local",
+  "clearCacheTitle": "Limpar cache?",
+  "clearCacheMsg": "Isto irá remover todos os dados de atividades e fitness guardados localmente.",
+  "clear": "Limpar",
+  "searchHint": "Pesquisar por nome...",
+  "allTypes": "Todos os tipos",
+  "filterByStatus": "Filtrar por estado",
+  "allStatuses": "Todos os estados",
+  "inCloud": "Na nuvem",
+  "pendingUpload": "Envio pendente",
+  "uploadError": "Erro no envio",
+  "sessionExpired": "Sessão expirada. Inicie sessão novamente.",
+  "serverError": "Erro do servidor",
+  "profileUpdateFailed": "Falha ao atualizar perfil",
+  "healthTab": "Saúde",
+  "healthSummary": "Resumo",
+  "healthWeight": "Peso",
+  "healthSleep": "Sono",
+  "healthWater": "Água",
+  "healthSteps": "Passos",
+  "todaySummary": "Resumo de hoje",
+  "noData": "Sem dados",
+  "quality": "Qualidade",
+  "goal": "Objetivo",
+  "todayDrunk": "Bebido hoje",
+  "history": "Histórico",
+  "noWaterRecords": "Sem registos de água",
+  "glass": "Copo",
+  "bottle": "Garrafa",
+  "editVolume": "Editar volume (ml)",
+  "deleteRecord": "Apagar registo",
+  "deleteRecordConfirm": "Esta ação não pode ser desfeita.",
+  "editEntry": "Editar entrada",
+  "weeklyStats": "Estatísticas semanais",
+  "editSteps": "Editar passos",
+  "stepsHistory": "Histórico de passos",
+  "noSleepRecords": "Sem registos de sono",
+  "noWeightRecords": "Sem registos de peso",
+  "addWeight": "Adicionar peso",
+  "addSleep": "Adicionar sono",
+  "bedtime": "Hora de dormir",
+  "wakeTime": "Hora de acordar",
+  "totalSleep": "Sono total",
+  "sleepQuality": "Qualidade do sono",
+  "feedMyFeed": "A minha feed",
+  "feedSubscriptions": "Subscrições",
+  "feedEmptyMy": "Ainda não há atividades na nuvem",
+  "feedEmptyFriends": "Feed de amigos vazia",
+  "activityMoving": "Tempo em movimento",
+  "activityMaxSpeed": "Velocidade máx.",
+  "activityAvgSpeed": "Velocidade média",
+  "activityElevation": "Ganho de elevação",
+  "activityNoNotes": "Sem notas",
+  "activityAddPhoto": "Adicionar foto",
+  "activityDeleteTitle": "Apagar atividade?",
+  "activityDeleteMsg": "Esta ação não pode ser desfeita.",
+  "activityTryAgain": "Tentar novamente",
+  "activityDisplayError": "Erro de exibição",
+  "activityCouldNotDisplay": "Não foi possível exibir a atividade:",
+  "activityCharts": "Gráficos",
+  "activitySpeed": "Velocidade",
+  "activityAltitude": "Altitude",
+  "activitySplit": "Split",
+  "activitySplitPace": "Ritmo",
+  "activitySplitElev": "Elevação",
+  "activityPR": "Recorde pessoal",
+  "activityPRBadge": "Novo recorde!",
+  "gearNotFound": "Equipamento não encontrado",
+  "gearPrimary": "PRIMÁRIO",
+  "gearMakePrimary": "Definir como primário para:",
+  "gearDefaultCats": "Sem categorias predefinidas para este tipo de equipamento",
+  "gearClose": "Fechar",
+  "gearTotalKm": "Distância total",
+  "gearPurchaseCost": "Custo de aquisição",
+  "gearPartsCost": "Custo de peças",
+  "notifSyncComplete": "Sincronização concluída",
+  "notifSync": "Sincronizar",
+  "notifSyncStatus": "Estado da sincronização",
+  "settingsStatsDisplay": "Exibição de estatísticas",
+  "settingsStatsRings": "Indicadores anulares",
+  "settingsStatsCards": "Grelha de cartões",
+  "loginEmail": "Email",
+  "loginOr": "ou",
+  "loginWithSSO": "Entrar com SSO",
+  "trackingDistance": "Distância",
+  "trackingDuration": "Duração",
+  "trackingCurrentSpeed": "Velocidade",
+  "trackingElevationGain": "Ganho de elevação",
+  "healthHeartRate": "Freq. Cardíaca",
+  "importFromHealthConnect": "Importar do Health Connect",
+  "importSummary": "Importado: {count} registos",
+  "hrZoneRest": "Repouso",
+  "hrZoneFatBurn": "Queima de Gordura",
+  "hrZoneCardio": "Cardio",
+  "hrZonePeak": "Pico",
+  "importing": "A importar...",
+  "noHeartRateRecords": "Sem registos de freq. cardíaca",
+  "healthConnectNotAvailable": "Health Connect não está disponível neste dispositivo"
+}
+

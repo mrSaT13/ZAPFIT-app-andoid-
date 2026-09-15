@@ -1,0 +1,75 @@
+﻿name: zapfit
+description: "ZAPFIT fitness tracking app (originally based on Endurain, heavily reworked)."
+publish_to: 'none'
+
+version: 0.8.9+35
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  cupertino_icons: ^1.0.8
+  flutter_secure_storage: ^10.0.0
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  geolocator: ^14.0.2
+  flutter_compass: ^0.8.0
+  package_info_plus: ^9.0.0
+  http: ^1.2.2
+  crypto: ^3.0.6
+  encrypt: ^5.0.3
+  otp: ^3.1.0
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+  webview_flutter: ^4.10.0
+  flutter_svg: ^2.0.16
+  sqflite: ^2.4.2
+  path: ^1.9.1
+  shared_preferences: ^2.5.3
+  xml: ^6.6.1
+  file_picker: ^10.3.2
+  path_provider: ^2.1.5
+  share_plus: ^11.1.0
+  flutter_blue_plus: ^1.36.8
+  get_it: ^7.6.0
+  permission_handler: ^11.3.1
+  image_picker: ^1.1.2
+  image_cropper: ^8.0.2
+  provider: ^6.1.1
+  flutter_local_notifications: ^18.0.0
+  timezone: ^0.9.4
+  flutter_background_service: ^5.1.0
+  flutter_background_service_android: ^6.2.0
+  workmanager: ^0.9.0
+  pedometer: ^4.0.2
+  connectivity_plus: ^6.1.0
+  health: ^13.3.1  # Health Connect (Android) / HealthKit (iOS)
+
+  # ZAPFIT premium features
+  dynamic_color: ^1.6.0
+  fl_chart: ^0.63.0
+  flutter_tts: ^3.8.3
+  web_socket_channel: ^3.0.3
+  url_launcher: ^6.2.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/logo/logo.png
+    - assets/sso/
+
+
+
