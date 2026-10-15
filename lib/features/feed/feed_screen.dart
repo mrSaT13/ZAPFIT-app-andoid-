@@ -214,39 +214,113 @@ class _FeedListState extends State<_FeedList> {
                 Icon(widget.isMyFeed ? Icons.cloud_queue : Icons.people_outline, size: 64, color: Colors.grey.withOpacity(0.5)),
                 const SizedBox(height: 16),
                 Text(
-                  widget.isMyFeed ? l10n.feedEmptyMy : l10n.feedEmptyFriends,
+                  service.lastError ?? (widget.isMyFeed ? l10n.feedEmptyMy : l10n.feedEmptyFriends),
                   style: const TextStyle(color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
+                if (service.lastError != null) ...[
+                  const SizedBox(height: 12),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Повторить'),
+                    onPressed: () {
+                      if (widget.isMyFeed) {
+                        service.fetchMyFeed();
+                      } else {
+                        service.fetchFriendsFeed();
+                      }
+                    },
+                  ),
+                ],
               ],
             ),
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            if (widget.isMyFeed) await service.fetchMyFeed();
-            else await service.fetchFriendsFeed();
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(8),
-            itemCount: activities.length + (!isOnline ? 1 : 0) + (hasMore ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (!isOnline && index == 0) {
-                return const _OfflineBanner(message: 'Нет сети, показаны локальные активности');
-              }
-              final activityIndex = !isOnline ? index - 1 : index;
-              if (activityIndex >= activities.length) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              return _ActivityFeedCard(activity: activities[activityIndex], isOwnFeed: widget.isMyFeed);
-            },
-          ),
+        return Column(
+          children: [
+            if (service.lastError != null && activities.isNotEmpty)
+              _ErrorBanner(
+                message: service.lastError!,
+                onRetry: () {
+                  if (widget.isMyFeed) {
+                    service.fetchMyFeed();
+                  } else {
+                    service.fetchFriendsFeed();
+                  }
+                },
+              ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  if (widget.isMyFeed) {
+                    await service.fetchMyFeed();
+                  } else {
+                    await service.fetchFriendsFeed();
+                  }
+                },
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(8),
+                  itemCount: activities.length + (!isOnline ? 1 : 0) + (hasMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (!isOnline && index == 0) {
+                      return const _OfflineBanner(message: 'Нет сети, показаны локальные активности');
+                    }
+                    final activityIndex = !isOnline ? index - 1 : index;
+                    if (activityIndex >= activities.length) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    return _ActivityFeedCard(activity: activities[activityIndex], isOwnFeed: widget.isMyFeed);
+                  },
+                ),
+              ),
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _ErrorBanner({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_outlined,
+              size: 20, color: theme.colorScheme.onErrorContainer),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Повторить'),
+          ),
+        ],
+      ),
     );
   }
 }

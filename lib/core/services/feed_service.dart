@@ -196,10 +196,16 @@ class FeedService extends ChangeNotifier {
         }
       } else if (response.statusCode >= 500) {
         _lastError = 'Сервер временно недоступен (${response.statusCode})';
+        _myFeedHasMore = false;
+      } else {
+        // 401/403/404 и прочие: дальше листать нечего, показываем ошибку с ретраем
+        _lastError = 'Не удалось обновить ленту (${response.statusCode})';
+        _myFeedHasMore = false;
       }
     } catch (e) {
       debugPrint('Error fetching my feed: $e');
       _lastError = 'Нет сети, показаны локальные активности';
+      _myFeedHasMore = false;
     } finally {
       _emitMyFeed();
     }
@@ -264,10 +270,15 @@ class FeedService extends ChangeNotifier {
         }
       } else if (response.statusCode >= 500) {
         _lastError = 'Сервер временно недоступен (${response.statusCode})';
+        _friendsFeedHasMore = false;
+      } else {
+        _lastError = 'Не удалось загрузить ленту друзей (${response.statusCode})';
+        _friendsFeedHasMore = false;
       }
     } catch (e) {
       debugPrint('Error fetching friends feed: $e');
       _lastError = 'Не удалось загрузить ленту друзей';
+      _friendsFeedHasMore = false;
     } finally {
       notifyListeners();
       _friendsFeedInFlight = false;
@@ -303,9 +314,14 @@ class FeedService extends ChangeNotifier {
         }
         _friendsFeed = _friendsFeedMerged.values.toList()
           ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      } else {
+        _lastError = 'Не удалось догрузить ленту (${response.statusCode})';
+        _friendsFeedHasMore = false;
       }
     } catch (e) {
       debugPrint('loadMoreFriendsFeed error: $e');
+      _lastError = 'Не удалось догрузить ленту';
+      _friendsFeedHasMore = false;
     } finally {
       _isLoadingMoreFriends = false;
       notifyListeners();

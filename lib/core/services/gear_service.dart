@@ -32,8 +32,19 @@ class GearService extends ChangeNotifier {
         _gears = baseGears;
         notifyListeners();
 
+        // Детали грузим параллельно: последовательно N снаряжений
+        // давали N x (таймаут 30с + фоновый логин) висящего спиннера.
+        final details = await Future.wait(
+          _gears.map((g) async {
+            try {
+              return await fetchGearDetail(g.id);
+            } catch (_) {
+              return null;
+            }
+          }),
+        );
         for (int i = 0; i < _gears.length; i++) {
-          final detail = await fetchGearDetail(_gears[i].id);
+          final detail = details[i];
           if (detail != null) {
             _gears[i] = GearRecord(
               id: detail.id,
