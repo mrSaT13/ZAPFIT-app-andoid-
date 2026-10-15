@@ -91,6 +91,10 @@ config/secrets.yaml
 *.bak
 *.bak*
 backups/
+.git_broken_*/
+
+# Local server stack (17GB, not part of mobile repo)
+server/
 
 # Android local config (machine-specific paths)
 android/local.properties
