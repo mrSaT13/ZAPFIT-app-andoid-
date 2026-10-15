@@ -125,28 +125,56 @@ class ApiClient {
       // 3. Otherwise try the common Endurain asset folders under the base.
       final urlsToTry = _buildImageCandidates(imageUrl, baseUrl);
 
-      for (final url in urlsToTry) {
-        try {
-          var headers = await _getHeaders();
-          var response = await trustedHttpClient.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
-
-          if (response.statusCode == 401) {
-            if (await _authService.refreshToken()) {
-              headers = await _getHeaders();
-              response = await trustedHttpClient.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
-            }
-          }
-
-          if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
-            _imageCache[imageUrl] = response.bodyBytes;
-            return response.bodyBytes;
-          }
-        } catch (e) {
-          debugPrint('ApiClient: image attempt failed for $url: $e');
-        }
-      }
+      // Гонка кандидатов параллельно: побеждает первый 200 с непустым телом.
+      // Раньше перебирались последовательно — до 6 x 10с = минута спиннера
+      // на одну картинку на медленном канале.
+      final bytes = await _raceImageCandidates(urlsToTry);
+      if (bytes != null) _imageCache[imageUrl] = bytes;
+      return bytes;
     } catch (e) {
       debugPrint('ApiClient: Image error: $e');
+    }
+    return null;
+  }
+
+  /// Запускает всех кандидатов параллельно, возвращает первый успешный.
+  Future<Uint8List?> _raceImageCandidates(List<String> urls) async {
+    if (urls.isEmpty) return null;
+    if (urls.length == 1) return _tryImageUrl(urls.first);
+    final completer = Completer<Uint8List?>();
+    var pending = urls.length;
+    for (final url in urls) {
+      unawaited(_tryImageUrl(url).then((bytes) {
+        if (bytes != null && !completer.isCompleted) {
+          completer.complete(bytes);
+        }
+        pending--;
+        if (pending == 0 && !completer.isCompleted) {
+          completer.complete(null);
+        }
+      }));
+    }
+    return completer.future;
+  }
+
+  /// Одна попытка загрузки картинки (10с + один рефреш при 401).
+  Future<Uint8List?> _tryImageUrl(String url) async {
+    try {
+      var headers = await _getHeaders();
+      var response = await trustedHttpClient.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 401) {
+        if (await _authService.refreshToken()) {
+          headers = await _getHeaders();
+          response = await trustedHttpClient.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
+        }
+      }
+
+      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+        return response.bodyBytes;
+      }
+    } catch (e) {
+      debugPrint('ApiClient: image attempt failed for $url: $e');
     }
     return null;
   }
