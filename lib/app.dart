@@ -3,32 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:zapfit/core/theme/app_theme.dart';
-import 'package:zapfit/shared/widgets/startup_splash.dart';
-import 'package:zapfit/shared/widgets/app_bottom_nav.dart';
-import 'package:zapfit/features/auth/login_screen.dart';
-import 'package:zapfit/features/onboarding/onboarding_screen.dart';
-import 'package:zapfit/features/onboarding/mode_selection_screen.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/shared/widgets/gradient_background.dart';
-import 'package:zapfit/core/services/voice_coach_service.dart';
-import 'package:zapfit/core/services/auto_sync_service.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
-import 'package:zapfit/core/services/background_tracking_service.dart';
-import 'package:zapfit/core/services/widgets_service.dart';
-import 'package:zapfit/core/services/connectivity_service.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/services/notification_service.dart';
-import 'package:zapfit/core/services/websocket_service.dart';
-import 'package:zapfit/core/services/gear_service.dart';
-import 'package:zapfit/core/models/gear_model.dart';
-import 'package:zapfit/core/services/activity_tracking_service.dart';
+import 'package:endurain/core/theme/app_theme.dart';
+import 'package:endurain/shared/widgets/startup_splash.dart';
+import 'package:endurain/shared/widgets/app_bottom_nav.dart';
+import 'package:endurain/features/auth/login_screen.dart';
+import 'package:endurain/features/onboarding/onboarding_screen.dart';
+import 'package:endurain/features/onboarding/mode_selection_screen.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/shared/widgets/gradient_background.dart';
+import 'package:endurain/core/services/voice_coach_service.dart';
+import 'package:endurain/core/services/auto_sync_service.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
+import 'package:endurain/core/services/background_tracking_service.dart';
+import 'package:endurain/core/services/widgets_service.dart';
+import 'package:endurain/core/services/connectivity_service.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/services/notification_service.dart';
+import 'package:endurain/core/services/websocket_service.dart';
+import 'package:endurain/core/services/gear_service.dart';
+import 'package:endurain/core/models/gear_model.dart';
+import 'package:endurain/core/services/activity_tracking_service.dart';
+import 'package:endurain/core/services/app_update_service.dart';
 import 'package:flutter/foundation.dart';
 
 class App extends StatefulWidget {
@@ -45,6 +46,7 @@ class _AppState extends State<App> {
   bool _isAuthenticated = false;
   bool _autoLoginAttempted = false;
   bool _autoLoginSucceeded = false;
+  bool _updateChecked = false;
 
   // Состояния навигации
   bool _showOnboarding = false;
@@ -291,6 +293,17 @@ class _AppState extends State<App> {
     setState(() => _showOnboarding = true);
   }
 
+  /// Однократная автопроверка обновлений после входа (не чаще раза в сутки,
+  /// диалог — только если на GitHub есть версия новее).
+  void _scheduleUpdateCheck(BuildContext context) {
+    if (_updateChecked) return;
+    _updateChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(AppUpdateService.instance.checkOnStartup(context));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -370,7 +383,12 @@ class _AppState extends State<App> {
                               onModeSelected: _onModeSelected,
                             )
                           : (_isAuthenticated
-                              ? AppBottomNav(onLogout: _onLogout)
+                              ? Builder(
+                                  builder: (ctx) {
+                                    _scheduleUpdateCheck(ctx);
+                                    return AppBottomNav(onLogout: _onLogout);
+                                  },
+                                )
                               : LoginScreen(onLoginSuccess: _onLoginSuccess)),
             );
           },

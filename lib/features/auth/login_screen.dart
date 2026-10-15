@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/sso_service.dart';
-import 'package:zapfit/core/services/server_settings_service.dart';
-import 'package:zapfit/core/models/identity_provider.dart';
-import 'package:zapfit/core/models/server_settings.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
-import 'package:zapfit/core/utils/validators.dart';
-import 'package:zapfit/core/utils/dialog_utils.dart';
-import 'package:zapfit/core/constants/ui_constants.dart';
-import 'package:zapfit/features/auth/sso_webview_screen.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/sso_service.dart';
+import 'package:endurain/core/services/server_settings_service.dart';
+import 'package:endurain/core/models/identity_provider.dart';
+import 'package:endurain/core/models/server_settings.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/core/utils/validators.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/features/auth/sso_webview_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, this.onLoginSuccess});

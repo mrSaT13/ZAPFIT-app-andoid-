@@ -3,13 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/constants/api_constants.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
-import 'package:zapfit/core/utils/trusted_http_client.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/utils/url_utils.dart';
+import 'package:endurain/core/utils/trusted_http_client.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 
 class ApiClient {

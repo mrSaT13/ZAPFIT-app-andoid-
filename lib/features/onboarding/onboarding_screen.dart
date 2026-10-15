@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/features/onboarding/mode_selection_screen.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/features/onboarding/mode_selection_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;

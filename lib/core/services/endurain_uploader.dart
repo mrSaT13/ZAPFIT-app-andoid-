@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthException implements Exception {
@@ -20,11 +20,11 @@ class UploadException implements Exception {
   String toString() => 'UploadException: $message (Code: $statusCode, Body: $responseBody)';
 }
 
-class ZapfitAuthManager {
+class EndurainAuthManager {
   final SecureStorageService _storage = SecureStorageService();
   final String baseUrl;
 
-  ZapfitAuthManager({required this.baseUrl});
+  EndurainAuthManager({required this.baseUrl});
 
   Future<Map<String, String>> getValidAuthHeaders() async {
     final token = await _storage.getAccessToken();
@@ -119,12 +119,12 @@ class ZapfitAuthManager {
   }
 }
 
-class ZapfitUploader {
+class EndurainUploader {
   final String baseUrl;
-  late final ZapfitAuthManager _authManager;
+  late final EndurainAuthManager _authManager;
 
-  ZapfitUploader({required this.baseUrl}) {
-    _authManager = ZapfitAuthManager(baseUrl: baseUrl);
+  EndurainUploader({required this.baseUrl}) {
+    _authManager = EndurainAuthManager(baseUrl: baseUrl);
   }
 
   Future<Map<String, dynamic>> uploadActivity({

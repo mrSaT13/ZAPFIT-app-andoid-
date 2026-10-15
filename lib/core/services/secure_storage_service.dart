@@ -1,5 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
+import 'package:endurain/core/utils/url_utils.dart';
 
 class SecureStorageService {
   static const _storage = FlutterSecureStorage(

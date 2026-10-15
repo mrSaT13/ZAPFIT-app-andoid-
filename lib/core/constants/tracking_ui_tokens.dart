@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
-import 'package:zapfit/core/theme/zapfit_design_system.dart';
+import 'package:endurain/core/theme/endurain_design_system.dart';
 
 class TrackingSpacing {
-  static const double xs = ZapfitSpacing.xxs;
-  static const double sm = ZapfitSpacing.xs;
-  static const double md = ZapfitSpacing.sm;
-  static const double lg = ZapfitSpacing.md;
-  static const double xl = ZapfitSpacing.lg;
+  static const double xs = EndurainSpacing.xxs;
+  static const double sm = EndurainSpacing.xs;
+  static const double md = EndurainSpacing.sm;
+  static const double lg = EndurainSpacing.md;
+  static const double xl = EndurainSpacing.lg;
 }
 
 class TrackingRadius {
@@ -17,10 +17,10 @@ class TrackingRadius {
 }
 
 class TrackingSemanticColors {
-  static const Color success = ZapfitColors.darkPrimary;
+  static const Color success = EndurainColors.darkPrimary;
   static const Color warning = Color(0xFFD39A47);
-  static const Color error = ZapfitColors.darkError;
-  static const Color info = ZapfitColors.darkSecondary;
+  static const Color error = EndurainColors.darkError;
+  static const Color info = EndurainColors.darkSecondary;
 }
 
 class TrackingTypography {

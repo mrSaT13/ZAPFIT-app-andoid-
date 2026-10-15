@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/constants/api_constants.dart';
-import 'package:zapfit/core/utils/pkce_utils.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
-import 'package:zapfit/core/utils/trusted_http_client.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/utils/pkce_utils.dart';
+import 'package:endurain/core/utils/url_utils.dart';
+import 'package:endurain/core/utils/trusted_http_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:otp/otp.dart';
-import 'package:zapfit/core/services/gear_photo_sync_service.dart';
+import 'package:endurain/core/services/gear_photo_sync_service.dart';
 
 class AuthService extends ChangeNotifier {
   final SecureStorageService _storage = SecureStorageService();

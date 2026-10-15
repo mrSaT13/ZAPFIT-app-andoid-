@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/models/health_models.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/models/health_models.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';

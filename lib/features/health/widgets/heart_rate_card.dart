@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/hr_zones.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/models/hr_zones.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 
 class HeartRateCard extends StatelessWidget {
   final int? currentBpm;

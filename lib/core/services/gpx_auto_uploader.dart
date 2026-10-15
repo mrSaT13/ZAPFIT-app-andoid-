@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import 'package:zapfit/core/services/gpx_service.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/activity_repository.dart';
-import 'package:zapfit/core/di/injection.dart';
+import 'package:endurain/core/services/gpx_service.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/activity_repository.dart';
+import 'package:endurain/core/di/injection.dart';
 
 class GpxAutoUploader {
   static final GpxAutoUploader _instance = GpxAutoUploader._internal();

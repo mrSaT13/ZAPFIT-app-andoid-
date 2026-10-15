@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
-import 'package:zapfit/core/models/health_models.dart';
+import 'package:endurain/core/models/health_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Google Fit integration service.

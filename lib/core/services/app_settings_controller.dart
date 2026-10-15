@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/url_utils.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
 
 // [comment removed - encoding corrupted]
 enum MapStyle { normal, topographic }

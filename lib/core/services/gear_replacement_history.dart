@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/core/models/gear_replacement.dart';
-import 'package:zapfit/core/models/gear_model.dart';
+import 'package:endurain/core/models/gear_replacement.dart';
+import 'package:endurain/core/models/gear_model.dart';
 
 class GearReplacementHistory {
   static final GearReplacementHistory instance = GearReplacementHistory._();

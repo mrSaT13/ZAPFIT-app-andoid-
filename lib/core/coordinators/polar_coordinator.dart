@@ -1,6 +1,6 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/models/device_model.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/models/device_model.dart';
 
 /// Coordinator for Polar chest straps (H7, H9, H10).
 /// Uses standard BLE Heart Rate service (0x180D) + Polar-specific services.

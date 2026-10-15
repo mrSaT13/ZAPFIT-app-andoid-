@@ -1,11 +1,11 @@
 ﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/websocket_service.dart';
-import 'package:zapfit/core/models/notification_model.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/websocket_service.dart';
+import 'package:endurain/core/models/notification_model.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
 
 class NotificationService extends ChangeNotifier {
   final ApiClient _apiClient = serviceLocator<ApiClient>();

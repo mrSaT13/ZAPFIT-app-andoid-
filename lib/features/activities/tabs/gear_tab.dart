@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/gear_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/models/gear_model.dart';
-import 'package:zapfit/core/models/gear_photo.dart';
-import 'package:zapfit/features/activities/gear_detail_screen.dart';
+import 'package:endurain/core/services/gear_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/models/gear_model.dart';
+import 'package:endurain/features/activities/gear_detail_screen.dart';
 
 class GearTab extends StatefulWidget {
   const GearTab({super.key});
@@ -89,13 +88,13 @@ class _GearTabState extends State<GearTab> {
               context,
               MaterialPageRoute<void>(builder: (_) => GearDetailScreen(gear: gear)),
             ),
-            leading: FutureBuilder<List<GearPhoto>>(
+            leading: FutureBuilder<List>(
               future: LocalActivityRepository.instance.getGearPhotos(gear.id),
               builder: (ctx, snap) {
                 final photos = snap.data;
                 if (photos != null && photos.isNotEmpty) {
                   // Prefer photo with existing file (offline cache covers server images)
-                  GearPhoto? photo;
+                  dynamic photo;
                   for (final p in photos) {
                     if (File(p.filePath).existsSync()) { photo = p; break; }
                   }

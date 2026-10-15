@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/steps_counter_service.dart';
-import 'package:zapfit/core/services/widgets_service.dart';
-import 'package:zapfit/features/health/tabs/steps_history_screen.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/steps_counter_service.dart';
+import 'package:endurain/core/services/widgets_service.dart';
+import 'package:endurain/features/health/tabs/steps_history_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:zapfit/core/models/health_models.dart';
+import 'package:endurain/core/models/health_models.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class StepsTab extends StatefulWidget {
   const StepsTab({super.key});

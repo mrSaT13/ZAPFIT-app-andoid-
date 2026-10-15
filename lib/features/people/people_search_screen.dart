@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
-import 'package:zapfit/shared/widgets/secure_image.dart';
-import 'package:zapfit/features/feed/user_profile_screen.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/url_utils.dart';
+import 'package:endurain/shared/widgets/secure_image.dart';
+import 'package:endurain/features/feed/user_profile_screen.dart';
 
 class PeopleSearchScreen extends StatefulWidget {
   const PeopleSearchScreen({super.key});

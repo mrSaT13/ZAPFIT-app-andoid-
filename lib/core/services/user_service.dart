@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/url_utils.dart';
 
 class UserProfile {
   final int id;

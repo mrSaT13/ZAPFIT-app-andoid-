@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 
 class VoiceCoachService {
   VoiceCoachService._();
@@ -9,7 +9,7 @@ class VoiceCoachService {
 
   final FlutterTts _tts = FlutterTts();
   final AppSettingsController _settings = AppSettingsController.instance;
-  static const _audioFocusChannel = MethodChannel('com.zapfit/audio_focus');
+  static const _audioFocusChannel = MethodChannel('com.endurain/audio_focus');
 
   bool _initialized = false;
   bool _isSpeaking = false;

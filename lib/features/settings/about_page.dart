@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/services/app_update_service.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -98,6 +98,8 @@ class _AboutPageState extends State<AboutPage> {
           ),
         ),
         const SizedBox(height: 32),
+        _buildUpdateCard(context),
+        const SizedBox(height: 16),
         const Divider(),
         ListTile(
           leading: const Icon(Icons.code),
@@ -146,6 +148,65 @@ class _AboutPageState extends State<AboutPage> {
         _featureItem(Icons.map, 'Оффлайн-карты'),
         _featureItem(Icons.sync, 'Синхронизация с сервером'),
       ],
+    );
+  }
+
+  Widget _buildUpdateCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: theme.colorScheme.primary,
+                  child: const Icon(Icons.system_update,
+                      color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isRu ? 'Обновления' : 'Updates',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isRu
+                            ? 'Автопроверка при запуске включена'
+                            : 'Auto-check on startup is on',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.refresh),
+              label: Text(isRu
+                  ? 'Проверить обновления'
+                  : 'Check for updates'),
+              onPressed: () =>
+                  AppUpdateService.instance.checkManually(context),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

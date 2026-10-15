@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/health_service.dart';
-// import 'package:zapfit/core/services/google_fit_service.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/shared/widgets/secure_image.dart';
-import 'package:zapfit/features/settings/bluetooth_sensors_screen.dart';
-import 'package:zapfit/features/devices/devices_screen.dart';
-import 'package:zapfit/features/onboarding/mode_selection_screen.dart';
-import 'package:zapfit/core/services/voice_coach_service.dart';
-import 'package:zapfit/core/services/ollama_service.dart';
-import 'package:zapfit/core/services/steps_counter_service.dart';
-import 'package:zapfit/features/settings/goals_screen.dart';
-import 'package:zapfit/features/settings/about_page.dart';
-import 'package:zapfit/features/settings/offline_map_download_screen.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/health_service.dart';
+// import 'package:endurain/core/services/google_fit_service.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/shared/widgets/secure_image.dart';
+import 'package:endurain/features/settings/bluetooth_sensors_screen.dart';
+import 'package:endurain/features/devices/devices_screen.dart';
+import 'package:endurain/features/onboarding/mode_selection_screen.dart';
+import 'package:endurain/core/services/voice_coach_service.dart';
+import 'package:endurain/core/services/ollama_service.dart';
+import 'package:endurain/core/services/steps_counter_service.dart';
+import 'package:endurain/features/settings/goals_screen.dart';
+import 'package:endurain/features/settings/about_page.dart';
+import 'package:endurain/features/settings/offline_map_download_screen.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:zapfit/core/utils/vo2max_calculator.dart';
-import 'package:zapfit/core/services/training_metrics_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
+import 'package:endurain/core/utils/vo2max_calculator.dart';
+import 'package:endurain/core/services/training_metrics_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, this.onLogout});
@@ -1559,7 +1559,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickImportFolder(BuildContext context) async {
     // On Android 11+ (API 30+), we need MANAGE_EXTERNAL_STORAGE to read Download folder
     try {
-      const platform = MethodChannel('com.zapfit/storage');
+      const platform = MethodChannel('com.endurain/storage');
       final int sdkVersion = await platform.invokeMethod('getSdkVersion') ?? 30;
       if (sdkVersion >= 30) {
         final bool hasPermission = await platform.invokeMethod('hasStoragePermission') ?? false;

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:zapfit/features/feed/feed_screen.dart';
-import 'package:zapfit/features/activities/activity_hub_screen.dart';
-import 'package:zapfit/features/settings/settings_screen.dart';
-import 'package:zapfit/features/health/health_screen.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
-import 'package:zapfit/core/constants/ui_constants.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/features/feed/feed_screen.dart';
+import 'package:endurain/features/activities/activity_hub_screen.dart';
+import 'package:endurain/features/settings/settings_screen.dart';
+import 'package:endurain/features/health/health_screen.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
 
 class AppBottomNav extends StatefulWidget {
   const AppBottomNav({super.key, this.onLogout});

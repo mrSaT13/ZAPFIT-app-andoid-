@@ -2,15 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_model.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/coordinators/coordinator_registry.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/xiaomi_ble_auth_service.dart';
-import 'package:zapfit/core/services/companion_device_service.dart';
-import 'package:zapfit/core/services/auto_reconnect_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/models/device_model.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/coordinators/coordinator_registry.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/xiaomi_ble_auth_service.dart';
+import 'package:endurain/core/services/companion_device_service.dart';
+import 'package:endurain/core/services/auto_reconnect_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:intl/intl.dart';
 
 class DeviceDetailScreen extends StatefulWidget {
@@ -494,7 +494,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> with SingleTick
           setState(() => _authStatus = 'Auth failed. Connecting as HR monitor...');
 
           try {
-            final platform = MethodChannel('com.zapfit/xiaomi_auth');
+            final platform = MethodChannel('com.endurain/xiaomi_auth');
             await platform.invokeMethod('disconnect');
           } catch (_) {}
           await Future.delayed(const Duration(milliseconds: 800));
@@ -579,13 +579,13 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> with SingleTick
 
   Future<void> _removeBond(TrackedDevice device) async {
     try {
-      const platform = MethodChannel('com.zapfit/storage');
+      const platform = MethodChannel('com.endurain/storage');
       final success = await platform.invokeMethod('removeBluetoothBond', {'macAddress': device.id});
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success == true ? 'Привязка сброшена' : 'Не удалось'), backgroundColor: success == true ? Colors.green : Colors.orange, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))));
     } catch (e) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e'), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating)); }
   }
 
   Future<void> _openBluetoothSettings() async {
-    try { const platform = MethodChannel('com.zapfit/storage'); await platform.invokeMethod('openBluetoothSettings'); } catch (_) {}
+    try { const platform = MethodChannel('com.endurain/storage'); await platform.invokeMethod('openBluetoothSettings'); } catch (_) {}
   }
 }

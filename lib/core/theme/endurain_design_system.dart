@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// Design system spacing tokens (in logical pixels).
-class ZapfitSpacing {
-  ZapfitSpacing._();
+class EndurainSpacing {
+  EndurainSpacing._();
 
   static const double xxs = 2;
   static const double xs = 4;
@@ -14,8 +14,8 @@ class ZapfitSpacing {
 }
 
 /// Design system semantic color tokens.
-class ZapfitColors {
-  ZapfitColors._();
+class EndurainColors {
+  EndurainColors._();
 
   // Dark theme
   static const Color darkPrimary = Color(0xFF5EADEB);

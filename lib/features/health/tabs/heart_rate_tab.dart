@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/models/hr_zones.dart';
-import 'package:zapfit/core/utils/stress_score_calculator.dart';
-import 'package:zapfit/features/health/widgets/heart_rate_card.dart';
-import 'package:zapfit/features/health/widgets/realtime_hr_widget.dart';
-import 'package:zapfit/features/health/tabs/heart_rate_history_screen.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/models/hr_zones.dart';
+import 'package:endurain/core/utils/stress_score_calculator.dart';
+import 'package:endurain/features/health/widgets/heart_rate_card.dart';
+import 'package:endurain/features/health/widgets/realtime_hr_widget.dart';
+import 'package:endurain/features/health/tabs/heart_rate_history_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class HeartRateTab extends StatelessWidget {
   const HeartRateTab({super.key});

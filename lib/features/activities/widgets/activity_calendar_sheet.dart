@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/activity_models.dart';
+import 'package:endurain/core/models/activity_models.dart';
 
 class ActivityCalendarSheet extends StatefulWidget {
   final List<ActivityRecord> activities;

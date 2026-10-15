@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class WeightHistoryScreen extends StatelessWidget {

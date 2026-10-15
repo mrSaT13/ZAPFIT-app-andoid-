@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:zapfit/core/models/health_models.dart';
+import 'package:endurain/core/models/health_models.dart';
 
 /// BLE service for Xiaomi/body composition scales.
 /// Uses standard Weight Scale (0x181D) and Body Composition (0x181C) services.

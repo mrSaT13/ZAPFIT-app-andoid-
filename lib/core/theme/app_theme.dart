@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:zapfit/core/constants/ui_constants.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 
 class AppTheme {
   // Material themes for Android

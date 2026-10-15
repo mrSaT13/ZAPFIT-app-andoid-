@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/feed_service.dart';
-import 'package:zapfit/core/services/notification_service.dart';
-import 'package:zapfit/core/services/connectivity_service.dart';
-import 'package:zapfit/core/services/activity_sync_service.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/features/activities/activity_detail_screen.dart';
-import 'package:zapfit/features/feed/user_profile_screen.dart';
-import 'package:zapfit/features/notifications/notifications_screen.dart';
-import 'package:zapfit/features/people/people_search_screen.dart';
-import 'package:zapfit/shared/widgets/secure_image.dart';
+import 'package:endurain/core/services/feed_service.dart';
+import 'package:endurain/core/services/notification_service.dart';
+import 'package:endurain/core/services/connectivity_service.dart';
+import 'package:endurain/core/services/activity_sync_service.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
+import 'package:endurain/features/feed/user_profile_screen.dart';
+import 'package:endurain/features/notifications/notifications_screen.dart';
+import 'package:endurain/features/people/people_search_screen.dart';
+import 'package:endurain/shared/widgets/secure_image.dart';
 import 'package:intl/intl.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});

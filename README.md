@@ -1,90 +1,57 @@
 <div align="center">
   <img src="assets/logo/logo.png" width="128" height="128">
 
-  # ZAPFIT Mobile
+  # ZAPFIT Mobile (fork Endurain)
 
-  [![License: AGPL-3.0](https://img.shields.io/github/license/mrSaT13/ZAPFIT-app-andoid-)](LICENSE)
-  ![Flutter](https://img.shields.io/badge/Flutter-3.38%2B-02569B?logo=flutter)
-  ![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows-lightgrey)
+  ![License](https://img.shields.io/github/license/endurain-project/endurain-flutter)
+  
+  **Продвинутое мобильное приложение для фитнеса и хайкинга**  
+  *Базируется на проекте Endurain, дополнено премиальными функциями и глубокой интеграцией с Android.*
 
-  **Фитнес-трекер с открытым кодом: тренировки, здоровье, BLE-датчики, офлайн-карты**
+  <p>
+    <i>Кроссплатформенное приложение для iOS, Android и macOS</i>
+  </p>
 </div>
 
-ZAPFIT — кроссплатформенное приложение для учёта тренировок и показателей здоровья.
-Изначально основано на [Endurain Mobile](https://github.com/endurain-project/endurain-flutter),
-с тех пор глубоко переработано: собственный модуль здоровья, голосовой тренер,
-Material You и глубокая интеграция с Android (виджеты, Health Connect, CompanionDeviceManager).
+## О проекте ZAPFIT
 
-## Возможности
+ZAPFIT — это мощный форк [Endurain Mobile](https://github.com/endurain-project/endurain-flutter), созданный для обеспечения более нативного и премиального пользовательского опыта. Мы сфокусировались на красивой визуализации данных, умных голосовых подсказках и современной эстетике Material You.
 
-- **Тренировки:** запись GPS-треков, темп/пульс/мощность, зоны, голосовые подсказки, автопауза
-- **Здоровье:** вес и ИМТ, сон (фазы и оценка), вода, шаги, пульс — дашборд и история
-- **Устройства:** BLE-датчики (пульс, каденс, мощность), Mi Band / Amazfit (эксперимент.),
-  шагомер через системные сенсоры и Health Connect
-- **Данные:** импорт/экспорт GPX, офлайн-тайлы карт, двусторонняя синхронизация с сервером,
-  полный офлайн-режим
-- **Сервер:** авторизация, SSO (Keycloak/Authentik/Authelia/Casdoor/Pocket ID), 2FA/TOTP
+## Новые возможности ZAPFIT
 
-## Требования
+🚀 **Эксклюзивные доработки:**
 
-- Flutter 3.38+ (stable), Dart 3.10+
-- Android: SDK 34, JDK 17, `minSdk 26`
-- Для iOS/macOS: Xcode; для Windows: Visual Studio с C++-тулчейном
+- **Модуль "Здоровье" (NEW):**
+    - **Дашборд:** Ежедневная сводка всех показателей на одном экране.
+    - **Трекер веса:** Интерактивные графики динамики и расчет ИМТ.
+    - **Мониторинг сна:** Анализ фаз сна (глубокий, легкий, REM) и оценка качества.
+    - **Контроль гидратации:** Быстрое добавление выпитой воды с наглядным прогрессом цели.
+    - **Шагомер:** История активности и цели на день.
+    - **Умная синхронизация:** Двусторонняя синхронизация с сервером (Pull/Push) с индикацией прогресса в реальном времени и полным офлайн-режимом.
+- **Dynamic Color (Android 12+):** Автоматическая адаптация под обои смартфона.
+- **Градиентные графики:** Красивая визуализация темпа и пульса.
+- **Голосовой умный тренер:** Мотивация и подсказки во время тренировок.
 
-Проверено на Flutter 3.44.4.
+✅ **Базовый функционал:**
+- Безопасная авторизация и поддержка SSO.
+- Запись треков и поддержка Bluetooth датчиков (BLE).
+- Импорт и экспорт в формате GPX.
+- Офлайн-кэширование карт.
 
-## Быстрый старт
+## Технический стек
 
-```bash
-git clone https://github.com/mrSaT13/ZAPFIT-app-andoid-.git
-cd ZAPFIT
-flutter pub get
-flutter run                        # запуск в отладке
-flutter build apk --debug          # отладочный APK, ключи не нужны
-```
-
-## Подпись релиза
-
-```bash
-cp android/key.properties.example android/key.properties  # заполнить своим keystore
-flutter build apk --release
-```
-
-Application ID — `com.dev.zapfit`.
-
-## Сервер
-
-Приложение подключается к серверу по протоколу Endurain API (адрес задаётся в настройках).
-Есть режим совместимости с оригинальным сервером и расширенный ZAPFIT-режим метрик
-(VO2max, TSS, TRIMP).
-
-[![Server repo](https://img.shields.io/badge/server-mrSaT13%2FserverZAPPFIT-02569B?logo=github)](https://github.com/mrSaT13/serverZAPPFIT)
-
-## Структура проекта
-
-```
-lib/
-  core/        # сервисы, модели, DI, тема, утилиты
-  features/    # activities, health, map, auth, devices, feed, settings, ...
-  shared/      # общие виджеты
-  l10n/        # локализация (en, ru, pt)
-android/ ios/ macos/ windows/ web/  # платформенные оболочки
-assets/        # логотип, иконки SSO-провайдеров
-test/          # тесты
-```
-
-Локализация генерируется автоматически (`flutter gen-l10n`, `generate: true`).
-
-## Документация
-
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — как предложить изменения
-- [`SECURITY.md`](SECURITY.md) — сообщение об уязвимостях
-- [`TRADEMARK.md`](TRADEMARK.md) — товарные знаки
-- [`TEST_CHECKLIST.md`](TEST_CHECKLIST.md) — чек-лист ручного тестирования
-- [`RELEASE_NOTES_v0.8.*.md`](RELEASE_NOTES_v0.8.8.md) — история релизов
+- **Framework:** Flutter 3.10+
+- **State Management:** Provider
+- **Визуализация:** [fl_chart](https://pub.dev/packages/fl_chart)
+- **База данных:** SQLite (sqflite)
+- **Голос:** [flutter_tts](https://pub.dev/packages/flutter_tts)
 
 ## Лицензия
 
-AGPL-3.0, см. [`LICENSE`](LICENSE). Основан на Endurain
-© João Vítor A. Silva и участники (AGPL-3.0); изменения ZAPFIT — под той же лицензией.
-При сетевом использовании модифицированного сервера его исходники тоже должны быть открыты.
+Этот проект распространяется под лицензией AGPL-3.0.
+
+---
+
+<div align="center">
+  <sub>Сделано с ❤️ на базе Endurain | ZAPFIT — твой нативный фитнес-компаньон</sub>
+</div>

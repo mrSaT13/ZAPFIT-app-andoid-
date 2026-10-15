@@ -1,6 +1,6 @@
-# Contributing to ZAPFIT
+# Contributing to Endurain
 
-Thank you for considering contributing to ZAPFIT! Your involvement helps improve the project and ensures it remains useful for others. Below are guidelines to make your contribution process smooth and effective.
+Thank you for considering contributing to Endurain! Your involvement helps improve the project and ensures it remains useful for others. Below are guidelines to make your contribution process smooth and effective.
 
 ## How Can You Contribute?
 
@@ -30,7 +30,7 @@ Thank you for considering contributing to ZAPFIT! Your involvement helps improve
 1. **Fork the Repository**: Create a fork of the project repository to work on your changes.
 2. **Clone the Repository**: Clone your forked repository to your local machine.
    ```bash
-    git clone https://github.com/mrSaT13/ZAPFIT-app-andoid-.git
+   git clone https://github.com/joaovitoriasilva/endurain.git
    ```
 3. **Create a Branch**: Create a new branch for your changes.
     ```bash
@@ -44,4 +44,4 @@ Thank you for considering contributing to ZAPFIT! Your involvement helps improve
 6. **Submit a Pull Request**: Open a pull request (PR) to the main repository. Be sure to describe your changes and link to any relevant issues.
 
 ## Thank You!
-Your contributions, whether big or small, make a huge difference. Thank you for helping to make ZAPFIT better!
+Your contributions, whether big or small, make a huge difference. Thank you for helping to make Endurain better!

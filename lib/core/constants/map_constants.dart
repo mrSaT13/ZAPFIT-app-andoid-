@@ -11,7 +11,7 @@ class MapConstants {
   static const double maxZoom = 18.0;
 
   // User agent
-  static const String userAgent = 'com.dev.zapfit';
+  static const String userAgent = 'com.endurain.endurain';
 
   // Default tile server URL
   static const String defaultTileServerUrl =

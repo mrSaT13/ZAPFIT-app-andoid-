@@ -144,7 +144,7 @@ class MapCacheService {
     return downloaded;
   }
 
-  static const _userAgent = 'com.dev.zapfit/1.0';
+  static const _userAgent = 'com.endurain.endurain/1.0';
 
   Future<List<int>?> _downloadBytes(String url) async {
     try {
@@ -193,6 +193,101 @@ class MapCacheService {
     await tileFile.writeAsBytes(bytes, flush: true);
   }
 
+  // Автокеш просмотренных тайлов: offline_maps/_auto/<provider>/<z>/<x>/<y>.png
+  static const String autoCacheFolder = '_auto';
+  static const int autoCacheMaxFiles = 5000;
+  static const int autoCacheMaxBytes = 300 * 1024 * 1024;
+
+  Future<void> saveAutoTile(int z, int x, int y, List<int> bytes, {String provider = 'osm'}) async {
+    try {
+      final baseDir = await getApplicationDocumentsDirectory();
+      final tileFile = File(p.join(baseDir.path, 'offline_maps', autoCacheFolder, provider, '$z', '$x', '$y.png'));
+      if (await tileFile.exists()) return;
+      await tileFile.parent.create(recursive: true);
+      await tileFile.writeAsBytes(bytes, flush: true);
+      await enforceAutoCacheLimit();
+    } catch (_) {}
+  }
+
+  Future<File?> getAutoTileFile(int z, int x, int y, {String? provider}) async {
+    try {
+      final root = await _offlineRoot();
+      if (provider != null) {
+        final f = File(p.join(root.path, autoCacheFolder, provider, '$z', '$x', '$y.png'));
+        if (await f.exists()) return f;
+      }
+      final autoDir = Directory(p.join(root.path, autoCacheFolder));
+      if (!await autoDir.exists()) return null;
+      await for (final e in autoDir.list()) {
+        if (e is! Directory) continue;
+        final f = File(p.join(e.path, '$z', '$x', '$y.png'));
+        if (await f.exists()) return f;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<({int files, int bytes})> getAutoCacheSize() async {
+    var files = 0;
+    var bytes = 0;
+    try {
+      final root = await _offlineRoot();
+      final autoDir = Directory(p.join(root.path, autoCacheFolder));
+      if (!await autoDir.exists()) return (files: 0, bytes: 0);
+      await for (final e in autoDir.list(recursive: true)) {
+        if (e is File && e.path.endsWith('.png')) {
+          files++;
+          try {
+            bytes += await e.length();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+    return (files: files, bytes: bytes);
+  }
+
+  Future<void> clearAutoCache() async {
+    try {
+      final root = await _offlineRoot();
+      final autoDir = Directory(p.join(root.path, autoCacheFolder));
+      if (await autoDir.exists()) await autoDir.delete(recursive: true);
+    } catch (_) {}
+  }
+
+  Future<void> enforceAutoCacheLimit({int maxFiles = autoCacheMaxFiles, int maxBytes = autoCacheMaxBytes}) async {
+    try {
+      final root = await _offlineRoot();
+      final autoDir = Directory(p.join(root.path, autoCacheFolder));
+      if (!await autoDir.exists()) return;
+      final files = <File>[];
+      await for (final e in autoDir.list(recursive: true)) {
+        if (e is File && e.path.endsWith('.png')) files.add(e);
+      }
+      if (files.isEmpty) return;
+      var totalBytes = 0;
+      final withStat = <({File file, int bytes, DateTime modified})>[];
+      for (final f in files) {
+        try {
+          final s = await f.stat();
+          withStat.add((file: f, bytes: s.size, modified: s.modified));
+          totalBytes += s.size;
+        } catch (_) {}
+      }
+      if (withStat.length <= maxFiles && totalBytes <= maxBytes) return;
+      withStat.sort((a, b) => a.modified.compareTo(b.modified));
+      var i = 0;
+      while ((withStat.length - i > maxFiles || totalBytes > maxBytes) && i < withStat.length) {
+        try {
+          totalBytes -= withStat[i].bytes;
+          await withStat[i].file.delete();
+        } catch (_) {}
+        i++;
+      }
+    } catch (_) {}
+  }
+
   Future<void> addDownloadedRegion({
     required String name,
     required double north, required double south,
@@ -228,7 +323,8 @@ class MapCacheService {
       }
       final direct = File(p.join(root.path, '$z', '$x', '$y.png'));
       if (await direct.exists()) return direct;
-      return null;
+      // автокеш просмотренных тайлов
+      return getAutoTileFile(z, x, y, provider: provider);
     } catch (_) { return null; }
   }
 

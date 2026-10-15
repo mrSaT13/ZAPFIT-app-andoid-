@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
 
 class TrainingAnalysis {
   final String verdict;

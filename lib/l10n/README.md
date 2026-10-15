@@ -48,7 +48,7 @@ When adding a new translation:
 ## Usage Example
 
 ```dart
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 // In your widget:
 final l10n = AppLocalizations.of(context)!;

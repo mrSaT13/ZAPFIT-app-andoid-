@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/health_connect_service.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/health_connect_service.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class HealthConnectImportButton extends StatelessWidget {
   final HealthService healthService;

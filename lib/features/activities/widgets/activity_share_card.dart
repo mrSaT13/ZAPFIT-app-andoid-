@@ -7,9 +7,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ll;
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/constants/map_constants.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/constants/map_constants.dart';
 
 class ActivityShareCard extends StatefulWidget {
   final ActivityRecord activity;

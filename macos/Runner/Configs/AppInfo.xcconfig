@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = zapfit
+PRODUCT_NAME = endurain
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.dev.zapfit
+PRODUCT_BUNDLE_IDENTIFIER = com.dev.endurain
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.dev.zapfit. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.endurain. All rights reserved.

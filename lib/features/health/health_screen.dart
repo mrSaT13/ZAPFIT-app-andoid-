@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/health_connect_service.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/features/health/widgets/sync_status_bar.dart';
-import 'package:zapfit/features/health/widgets/health_connect_import_button.dart';
-import 'package:zapfit/features/health/widgets/realtime_hr_widget.dart';
-import 'package:zapfit/features/health/tabs/dashboard_tab.dart';
-import 'package:zapfit/features/health/tabs/weight_tab.dart';
-import 'package:zapfit/features/health/tabs/sleep_tab.dart';
-import 'package:zapfit/features/health/tabs/water_tab.dart';
-import 'package:zapfit/features/health/tabs/steps_tab.dart';
-import 'package:zapfit/features/health/tabs/heart_rate_tab.dart';
-import 'package:zapfit/features/devices/devices_screen.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/health_connect_service.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/features/health/widgets/sync_status_bar.dart';
+import 'package:endurain/features/health/widgets/health_connect_import_button.dart';
+import 'package:endurain/features/health/widgets/realtime_hr_widget.dart';
+import 'package:endurain/features/health/tabs/dashboard_tab.dart';
+import 'package:endurain/features/health/tabs/weight_tab.dart';
+import 'package:endurain/features/health/tabs/sleep_tab.dart';
+import 'package:endurain/features/health/tabs/water_tab.dart';
+import 'package:endurain/features/health/tabs/steps_tab.dart';
+import 'package:endurain/features/health/tabs/heart_rate_tab.dart';
+import 'package:endurain/features/devices/devices_screen.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({super.key});

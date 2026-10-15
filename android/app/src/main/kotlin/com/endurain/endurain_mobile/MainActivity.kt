@@ -1,4 +1,4 @@
-package com.dev.zapfit
+package com.dev.endurain
 
 import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothAdapter
@@ -24,16 +24,17 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.CalendarContract
 import android.provider.Settings
 import android.util.Log
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import com.dev.zapfit.widget.ZapfitDailyWidget
-import com.dev.zapfit.widget.ZapfitSummaryWidget
-import com.dev.zapfit.widget.ZapfitSleepWidget
-import com.dev.zapfit.widget.ZapfitHrWidget
+import com.endurain.endurain_mobile.widget.ZapfitDailyWidget
+import com.endurain.endurain_mobile.widget.ZapfitSummaryWidget
+import com.endurain.endurain_mobile.widget.ZapfitSleepWidget
+import com.endurain.endurain_mobile.widget.ZapfitHrWidget
 
 class MainActivity : FlutterFragmentActivity(), SensorEventListener {
     private val CHANNEL = "com.zapfit/widgets"
@@ -61,8 +62,39 @@ class MainActivity : FlutterFragmentActivity(), SensorEventListener {
             }
         }
 
+        // System calendar: open Calendar app with prefilled competition event.
+        // No WRITE_CALENDAR permission needed — user confirms in their calendar app.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.zapfit/calendar").setMethodCallHandler { call, result ->
+            if (call.method == "addEvent") {
+                try {
+                    val title = call.argument<String>("title") ?: ""
+                    val description = call.argument<String>("description") ?: ""
+                    val beginMs = (call.argument<Number>("beginMs") ?: 0).toLong()
+                    val endMs = (call.argument<Number>("endMs") ?: 0).toLong()
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        data = CalendarContract.Events.CONTENT_URI
+                        putExtra(CalendarContract.Events.TITLE, title)
+                        putExtra(CalendarContract.Events.DESCRIPTION, description)
+                        putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginMs)
+                        putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMs)
+                    }
+                    if (intent.resolveActivity(packageManager) != null) {
+                        startActivity(intent)
+                        result.success(true)
+                    } else {
+                        result.success(false)
+                    }
+                } catch (e: Exception) {
+                    Log.e("ZAPFIT", "calendar addEvent error: $e")
+                    result.success(false)
+                }
+            } else {
+                result.notImplemented()
+            }
+        }
+
         // Storage permission channel for folder auto-import
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.zapfit/storage").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.endurain/storage").setMethodCallHandler { call, result ->
             when (call.method) {
                 "getSdkVersion" -> result.success(Build.VERSION.SDK_INT)
                 "hasStoragePermission" -> {
@@ -208,7 +240,7 @@ class MainActivity : FlutterFragmentActivity(), SensorEventListener {
         }
 
         // Audio focus channel for music ducking during TTS
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.zapfit/audio_focus").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.endurain/audio_focus").setMethodCallHandler { call, result ->
             when (call.method) {
                 "requestFocus" -> {
                     try {
@@ -257,7 +289,7 @@ class MainActivity : FlutterFragmentActivity(), SensorEventListener {
         }
 
         // CompanionDeviceManager channel
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.zapfit/companion_device").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.endurain/companion_device").setMethodCallHandler { call, result ->
             when (call.method) {
                 "isAvailable" -> {
                     result.success(true)
@@ -299,7 +331,7 @@ class MainActivity : FlutterFragmentActivity(), SensorEventListener {
         }
 
         // Xiaomi BLE Auth channel
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.zapfit/xiaomi_auth").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.endurain/xiaomi_auth").setMethodCallHandler { call, result ->
             when (call.method) {
                 "connectAndAuth" -> {
                     val macAddress = call.argument<String>("macAddress") ?: ""

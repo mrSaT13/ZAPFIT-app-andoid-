@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/models/activity_media_model.dart';
-import 'package:zapfit/core/models/gear_photo.dart';
-import 'package:zapfit/core/models/health_models.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/models/activity_media_model.dart';
+import 'package:endurain/core/models/gear_photo.dart';
+import 'package:endurain/core/models/health_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -24,7 +24,7 @@ class LocalActivityRepository {
 
     _db = await openDatabase(
       path,
-      version: 33,
+      version: 34,
       onCreate: (db, version) async {
         await _createActivityTables(db);
         await _createMediaTable(db);
@@ -34,6 +34,7 @@ class LocalActivityRepository {
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         debugPrint('DB Upgrade: $oldVersion -> $newVersion');
+        if (oldVersion < 34) await _createIndices(db);
         if (oldVersion < 15) await _createIndices(db);
         if (oldVersion < 16) {
           try {
@@ -241,6 +242,10 @@ class LocalActivityRepository {
   Future<void> _createIndices(Database db) async {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_activities_start ON activities(started_at_ms)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_points_activity ON activity_points(activity_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_points_activity_timestamp ON activity_points(activity_id, timestamp_ms)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_activities_ended ON activities(ended_at_ms)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_activities_kind ON activities(kind)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_activities_upload ON activities(upload_status)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_weight_date ON weight_records(date)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_steps_date ON steps_records(date)');
   }

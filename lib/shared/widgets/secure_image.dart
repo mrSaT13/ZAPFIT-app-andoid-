@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/di/service_locator.dart';
 
 class ImageCache {
   ImageCache._();

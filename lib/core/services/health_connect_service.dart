@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/utils/hr_estimator.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/utils/hr_estimator.dart';
 
 class HealthConnectService {
   HealthConnectService._();

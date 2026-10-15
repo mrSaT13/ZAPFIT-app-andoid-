@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/activity_upload_service.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/activity_upload_service.dart';
 import 'package:flutter/foundation.dart';
 
 class SyncResult {

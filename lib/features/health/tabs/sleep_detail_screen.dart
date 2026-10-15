@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/utils/sleep_score_calculator.dart';
-import 'package:zapfit/features/health/widgets/sleep_card.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/utils/sleep_score_calculator.dart';
+import 'package:endurain/features/health/widgets/sleep_card.dart';
 import 'package:intl/intl.dart';
 
 class SleepDetailScreen extends StatelessWidget {

@@ -2,20 +2,40 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
-import 'package:zapfit/core/services/location_service.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/services/gear_service.dart';
-import 'package:zapfit/core/services/goals_service.dart';
-import 'package:zapfit/core/services/background_tracking_service.dart';
-import 'package:zapfit/core/services/voice_coach_service.dart';
-import 'package:zapfit/core/utils/gps_kalman_filter.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
+import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/services/gear_service.dart';
+import 'package:endurain/core/services/goals_service.dart';
+import 'package:endurain/core/services/background_tracking_service.dart';
+import 'package:endurain/core/services/voice_coach_service.dart';
+import 'package:endurain/core/utils/gps_kalman_filter.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+// Isolate entry for heavy distance recompute (5k+ points, avoids UI jank)
+double _recomputeDistanceIsolateEntry(List<Map<String, double>> coords) {
+  double sum = 0;
+  for (var i = 1; i < coords.length; i++) {
+    final a = coords[i - 1];
+    final b = coords[i];
+    const r = 6371000.0;
+    final dLat = (b['lat']! - a['lat']!) * math.pi / 180.0;
+    final dLon = (b['lon']! - a['lon']!) * math.pi / 180.0;
+    final lat1 = a['lat']! * math.pi / 180.0;
+    final lat2 = b['lat']! * math.pi / 180.0;
+    final sinLat = math.sin(dLat / 2);
+    final sinLon = math.sin(dLon / 2);
+    final aa = sinLat * sinLat + math.cos(lat1) * math.cos(lat2) * sinLon * sinLon;
+    final c = 2 * math.atan2(math.sqrt(aa), math.sqrt(1 - aa));
+    sum += r * c;
+  }
+  return sum;
+}
 
 class ActivityTrackingService {
   ActivityTrackingService._();
@@ -94,7 +114,14 @@ class ActivityTrackingService {
       double dist = 0;
       if (points.isNotEmpty) {
         dist = points.last.distanceFromStartMeters;
-        if (dist == 0 && points.length >= 2) dist = _recomputeDistanceFromPoints(points);
+        if (dist == 0 && points.length >= 2) {
+          if (points.length > 1000) {
+            final coords = points.map((p) => {'lat': p.latitude, 'lon': p.longitude}).toList();
+            dist = await compute(_recomputeDistanceIsolateEntry, coords);
+          } else {
+            dist = _recomputeDistanceFromPoints(points);
+          }
+        }
       }
       final kind = ActivityKind.values.firstWhere((k) => k.name == kindName, orElse: () => record.kind);
       _snapshot = TrackingSnapshot(
@@ -493,10 +520,16 @@ class ActivityTrackingService {
 
         final record = await _repository.getActivity(activityId);
         if (record != null) {
-          // Пересчёт дистанции по точкам — защита от потерь фона/джиттера
+          // Пересчёт дистанции по точкам в изоляте для 1k+ точек (тяжёлый haversine)
           double finalDistance = _totalDistance;
           if (points.length >= 2) {
-            final recomputed = _recomputeDistanceFromPoints(points);
+            final double recomputed;
+            if (points.length > 1000) {
+              final coords = points.map((p) => {'lat': p.latitude, 'lon': p.longitude}).toList();
+              recomputed = await compute(_recomputeDistanceIsolateEntry, coords);
+            } else {
+              recomputed = _recomputeDistanceFromPoints(points);
+            }
             // если расхождение >5% и >3м — берём пересчитанную
             if ((recomputed - finalDistance).abs() > 3 &&
                 (finalDistance == 0 || (recomputed - finalDistance).abs() / (finalDistance == 0 ? 1 : finalDistance) > 0.05)) {

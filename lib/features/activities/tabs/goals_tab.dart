@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/goals_service.dart';
-import 'package:zapfit/core/utils/riegel_predictor.dart';
-import 'package:zapfit/core/utils/vdot_calculator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:endurain/core/services/goals_service.dart';
+import 'package:endurain/core/utils/riegel_predictor.dart';
+import 'package:endurain/core/utils/vdot_calculator.dart';
 
 class GoalsTab extends StatefulWidget {
   const GoalsTab({super.key});
@@ -24,10 +25,38 @@ class _GoalsTabState extends State<GoalsTab> {
   Map<String, double>? _trainingPaces;
   // === ZAPFIT metrics end ===
 
+  static const _kRaceTimeKey = 'race_predictor_time';
+  static const _kRaceDistanceKey = 'race_predictor_distance';
+
   @override
   void initState() {
     super.initState();
     _loadGoals();
+    _loadRacePredictor();
+  }
+
+  Future<void> _loadRacePredictor() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final time = prefs.getString(_kRaceTimeKey);
+      final dist = prefs.getString(_kRaceDistanceKey);
+      if (!mounted) return;
+      setState(() {
+        if (time != null) _raceTimeCtrl.text = time;
+        if (dist != null && RiegelPredictor.standardDistances.containsKey(dist)) {
+          _knownDistanceKey = dist;
+        }
+      });
+      if (time != null && time.isNotEmpty) _computePredictions();
+    } catch (_) {}
+  }
+
+  Future<void> _saveRacePredictor() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kRaceTimeKey, _raceTimeCtrl.text);
+      await prefs.setString(_kRaceDistanceKey, _knownDistanceKey);
+    } catch (_) {}
   }
 
   Future<void> _loadGoals() async {
@@ -321,6 +350,7 @@ class _GoalsTabState extends State<GoalsTab> {
   }
 
   void _computePredictions() {
+    _saveRacePredictor();
     final knownMeters = RiegelPredictor.standardDistances[_knownDistanceKey]!;
     final time = _parseRaceTime(_raceTimeCtrl.text);
     if (time == null || time <= 0) {
@@ -381,7 +411,12 @@ class _GoalsTabState extends State<GoalsTab> {
                     value: _knownDistanceKey,
                     decoration: const InputDecoration(labelText: 'Известная дистанция', border: OutlineInputBorder()),
                     items: distanceItems,
-                    onChanged: (v) => setState(() => _knownDistanceKey = v!),
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() => _knownDistanceKey = v);
+                      _saveRacePredictor();
+                      _computePredictions();
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),

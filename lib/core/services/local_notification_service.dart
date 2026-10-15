@@ -26,6 +26,7 @@ class LocalNotificationService {
   static const int _gearWearNotifId = 6;
   static const String _goalChannelId = 'goal_achievements';
   static const int _goalNotifId = 7;
+  static const String _competitionChannelId = 'competition_stages';
 
   void Function()? _onPauseAction;
   void Function()? _onResumeAction;
@@ -102,7 +103,7 @@ class LocalNotificationService {
       const AndroidNotificationChannel(
         _serverChannelId,
         'Уведомления сервера',
-        description: 'Новые уведомления с сервера ZAPFIT',
+        description: 'Новые уведомления с сервера Endurain',
         importance: Importance.high,
       ),
     );
@@ -121,6 +122,15 @@ class LocalNotificationService {
         _goalChannelId,
         'Достижение целей',
         description: 'Уведомления о достижении целей',
+        importance: Importance.high,
+      ),
+    );
+
+    await android?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _competitionChannelId,
+        'Этапы подготовки',
+        description: 'Напоминания перед соревнованием: 14/7/3/1 дней, тейпер, день старта',
         importance: Importance.high,
       ),
     );
@@ -321,7 +331,7 @@ class LocalNotificationService {
           android: AndroidNotificationDetails(
             _serverChannelId,
             'Уведомления сервера',
-            channelDescription: 'Новые уведомления с сервера ZAPFIT',
+            channelDescription: 'Новые уведомления с сервера Endurain',
             importance: Importance.high,
             priority: Priority.high,
             autoCancel: true,
@@ -424,6 +434,50 @@ class LocalNotificationService {
       ),
     );
     await _plugin.show(_goalNotifId, title, body, details);
+  }
+
+  /// Плановое уведомление этапа подготовки (дата/время точные, срабатывает и без сети).
+  Future<bool> scheduleCompetitionStage({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime when,
+  }) async {
+    try {
+      if (!_initialized) await init();
+      if (when.isBefore(DateTime.now().add(const Duration(minutes: 1)))) return false;
+      final tzWhen = tz.TZDateTime.from(when, tz.local);
+      const androidDetails = AndroidNotificationDetails(
+        _competitionChannelId,
+        'Этапы подготовки',
+        channelDescription: 'Напоминания перед соревнованием: 14/7/3/1 дней, тейпер, день старта',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_notification',
+      );
+      const details = NotificationDetails(android: androidDetails);
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tzWhen,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('Error scheduling competition stage $id: $e');
+      return false;
+    }
+  }
+
+  Future<void> cancelCompetitionNotifications(List<int> ids) async {
+    for (final id in ids) {
+      try {
+        await _plugin.cancel(id);
+      } catch (_) {}
+    }
   }
 
   String _plural(int n, String one, String few, String many) {

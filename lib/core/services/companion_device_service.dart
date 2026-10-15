@@ -13,7 +13,7 @@ class CompanionDeviceService {
   CompanionDeviceService._();
   static final CompanionDeviceService instance = CompanionDeviceService._();
 
-  static const _channel = MethodChannel('com.zapfit/companion_device');
+  static const _channel = MethodChannel('com.endurain/companion_device');
 
   final StreamController<CompanionDeviceEvent> _eventController =
       StreamController<CompanionDeviceEvent>.broadcast();

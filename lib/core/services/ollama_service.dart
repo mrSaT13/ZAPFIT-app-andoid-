@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
 
 class OllamaService {
   OllamaService._();
@@ -76,6 +76,48 @@ class OllamaService {
     final userPrompt = _interpolate(template, metrics);
     final systemPrompt = 'Ты — дружелюбный тренер по бегу/велоспорту. Отвечай кратко, мотивирующе, без эмодзи, на русском языке. 2-3 предложения.';
 
+    return _chat(
+      systemPrompt: systemPrompt,
+      userPrompt: userPrompt,
+      baseUrl: baseUrl,
+      model: model,
+      apiKey: apiKey,
+    );
+  }
+
+  /// Анализ подготовки к соревнованию по сводке (дни до старта, объёмы, готовность).
+  Future<String> generatePreparationAnalysis({
+    required String summary,
+    String? modelOverride,
+    String? apiKeyOverride,
+    String? baseUrlOverride,
+  }) async {
+    final baseUrl = (baseUrlOverride ?? _settings.ollamaBaseUrl).trim();
+    final model = (modelOverride ?? _settings.ollamaModel).trim();
+    final apiKey = apiKeyOverride ?? await _settings.getOllamaApiKey();
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception('Ollama API key не задан. Укажите ключ в настройках.');
+    }
+    if (model.isEmpty) throw Exception('Модель Ollama не выбрана');
+
+    const systemPrompt = 'Ты — тренер по бегу/велоспорту. Оцени готовность к соревнованию, посоветуй отдых и 2-3 ключевые тренировки. Кратко, по-русски, без эмодзи, до 6 предложений.';
+    return _chat(
+      systemPrompt: systemPrompt,
+      userPrompt: summary,
+      baseUrl: baseUrl,
+      model: model,
+      apiKey: apiKey,
+    );
+  }
+
+  /// Общий вызов /api/chat (non-stream). Используется всеми генерациями.
+  Future<String> _chat({
+    required String systemPrompt,
+    required String userPrompt,
+    required String baseUrl,
+    required String model,
+    required String apiKey,
+  }) async {
     final url = _buildUrl(baseUrl, '/api/chat');
     final headers = _buildHeaders(apiKey);
     final body = jsonEncode({

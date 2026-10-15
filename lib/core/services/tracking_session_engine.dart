@@ -2,16 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:zapfit/core/models/activity.dart';
-import 'package:zapfit/core/models/gps_filter_mode.dart';
-import 'package:zapfit/core/services/activity_repository.dart';
-import 'package:zapfit/core/services/location_service.dart';
-import 'package:zapfit/core/services/audio_feedback_service.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/utils/geometry/douglas_peucker.dart';
+import 'package:endurain/core/models/activity.dart';
+import 'package:endurain/core/models/gps_filter_mode.dart';
+import 'package:endurain/core/services/activity_repository.dart';
+import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/services/audio_feedback_service.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/utils/geometry/douglas_peucker.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
+
+// Isolate entry for heavy Douglas-Peucker simplification (2000+ points)
+List<TrackPoint> _simplifyTrackPoints(List<TrackPoint> points) {
+  return DouglasPeucker.simplify(points, 5.0);
+}
 
 enum TrackingSessionState { idle, initializing, recording, paused, stopped }
 
@@ -766,16 +771,21 @@ class TrackingSessionEngine {
       // Let's stick to streaming points for now.
     }
 
-    // 2. Manage In-Memory Path (UI)
+    // 2. Manage In-Memory Path (UI) — heavy simplify in isolate
     var newPoints = List<TrackPoint>.from(previousPoints)..add(point);
 
-    // Simplification Strategy:
-    // If the path grows too large, run Douglas-Peucker to compress it.
-    // Threshold: 2000 points (~1 hour of raw 1s data is 3600 points).
-    // Compression target: ~500-1000 points for smooth rendering.
+    // Simplification Strategy (isolate for 2000+ points to avoid UI jank)
     if (newPoints.length > 2000) {
-      // Simplify with 5 meters tolerance
-      newPoints = DouglasPeucker.simplify(newPoints, 5.0);
+      // Offload to isolate, keep unsimplified for current frame
+      final pointsForIsolate = List<TrackPoint>.from(newPoints);
+      compute(_simplifyTrackPoints, pointsForIsolate).then((simplified) {
+        if (_snapshot.trackPoints.length >= 2000) {
+          _snapshot = _snapshot.copyWith(trackPoints: simplified);
+          _emitSnapshot();
+        }
+      }).catchError((e) {
+        debugPrint('DouglasPeucker isolate failed: $e');
+      });
     }
 
     _snapshot = _snapshot.copyWith(

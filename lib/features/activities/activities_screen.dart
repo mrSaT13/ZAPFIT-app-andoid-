@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/activity_sync_service.dart';
-import 'package:zapfit/core/services/gpx_service.dart';
-import 'package:zapfit/features/activities/activity_detail_screen.dart';
-import 'package:zapfit/features/activities/widgets/activity_calendar_sheet.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/activity_sync_service.dart';
+import 'package:endurain/core/services/gpx_service.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
+import 'package:endurain/features/activities/widgets/activity_calendar_sheet.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class ActivitiesScreen extends StatefulWidget {

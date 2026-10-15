@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
+import 'package:endurain/core/services/health_service.dart';
 
 class HealthSyncStatusBar extends StatelessWidget {
   const HealthSyncStatusBar({super.key});

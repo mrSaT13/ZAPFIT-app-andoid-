@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/models/gear_photo.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/models/gear_photo.dart';
 
 /// Sync local gear_photos to server /gear_images + pull server images for offline cache
 class GearPhotoSyncService {
@@ -54,15 +54,30 @@ class GearPhotoSyncService {
       final gearDir = Directory(p.join(appDir.path, 'gear_photos', '$gearId'));
       if (!gearDir.existsSync()) await gearDir.create(recursive: true);
       final List<GearPhoto> result = [];
+      // Дедуп ответа сервера: один serverId — одна строка (сервер плодил дубли).
+      final seenServerIds = <int>{};
       for (final item in data) {
         final m = item as Map<String, dynamic>;
         final serverId = (m['id'] as num).toInt();
+        if (!seenServerIds.add(serverId)) continue;
         final imageUrl = (m['image_url'] as String?) ?? (m['image_path'] as String?) ?? '';
         if (imageUrl.isEmpty) continue;
-        // Skip if already cached
+        // Переиспользуем существующую строку вместо вставки дубля.
         final existing = await _repo.getGearPhotoByServerId(serverId);
-        if (existing != null && File(existing.filePath).existsSync()) {
-          result.add(existing);
+        if (existing != null) {
+          if (File(existing.filePath).existsSync()) {
+            result.add(existing);
+            continue;
+          }
+          // Строка есть, а файла нет — докачаем в тот же filePath, без новой строки.
+          try {
+            final bytes = await _api.getImageBytes(imageUrl);
+            if (bytes == null || bytes.isEmpty) continue;
+            await File(existing.filePath).writeAsBytes(bytes);
+            result.add(existing);
+          } catch (e) {
+            debugPrint('GearPhotoSync re-download error $serverId: $e');
+          }
           continue;
         }
         try {
@@ -87,10 +102,44 @@ class GearPhotoSyncService {
           debugPrint('GearPhotoSync cache error $serverId: $e');
         }
       }
+      // Чистим старые дубли (400 одинаковых после прошлых синков): по serverId оставляем одну строку.
+      await deleteDuplicateServerPhotos(gearId);
       return result;
     } catch (e) {
       debugPrint('GearPhotoSync syncFromServer error: $e');
       return [];
     }
+  }
+
+  /// Удаляет дубли строк с одинаковым serverId (оставляет самую старую),
+  /// файлы дублей стирает с диска. Возвращает число удалённых.
+  Future<int> deleteDuplicateServerPhotos(int gearId) async {
+    var removed = 0;
+    try {
+      final photos = await _repo.getGearPhotos(gearId);
+      final byServerId = <int, List<GearPhoto>>{};
+      for (final p in photos) {
+        if (p.serverId == null) continue;
+        byServerId.putIfAbsent(p.serverId!, () => []).add(p);
+      }
+      for (final entry in byServerId.entries) {
+        if (entry.value.length < 2) continue;
+        entry.value.sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+        for (final dup in entry.value.skip(1)) {
+          try {
+            final f = File(dup.filePath);
+            if (await f.exists()) await f.delete();
+          } catch (_) {}
+          try {
+            if (dup.id != null) await _repo.deleteGearPhoto(dup.id!);
+            removed++;
+          } catch (_) {}
+        }
+      }
+      if (removed > 0) debugPrint('GearPhotoSync: removed $removed duplicate rows for gear $gearId');
+    } catch (e) {
+      debugPrint('GearPhotoSync dedup error: $e');
+    }
+    return removed;
   }
 }

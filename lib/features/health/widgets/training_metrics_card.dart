@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zapfit/core/models/training_metrics.dart';
-import 'package:zapfit/core/services/training_metrics_service.dart';
-import 'package:zapfit/core/utils/acwr_calculator.dart';
+import 'package:endurain/core/models/training_metrics.dart';
+import 'package:endurain/core/services/training_metrics_service.dart';
+import 'package:endurain/core/utils/acwr_calculator.dart';
 import 'package:intl/intl.dart';
 
 class TrainingMetricsCard extends StatefulWidget {

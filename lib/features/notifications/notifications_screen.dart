@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/models/notification_model.dart';
-import 'package:zapfit/core/services/notification_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/models/notification_model.dart';
+import 'package:endurain/core/services/notification_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {

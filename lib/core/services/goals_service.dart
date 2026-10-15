@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
 
 class ServerGoal {
   final int id;
@@ -216,7 +216,7 @@ class GoalsService {
 
       final response = await _apiClient.post(_basePath, body: body);
       if (response.statusCode == 201) {
-        return ServerGoal.fromJson(json.decode(response.body) as Map<String, dynamic>);
+        return ServerGoal.fromJson(json.decode(response.body));
       }
     } catch (e) {
       debugPrint('GoalsService: createGoal error: $e');

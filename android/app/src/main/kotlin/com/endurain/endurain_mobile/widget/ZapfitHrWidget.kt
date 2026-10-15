@@ -1,4 +1,4 @@
-package com.dev.zapfit.widget
+package com.endurain.endurain_mobile.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -6,7 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.view.View
 import android.widget.RemoteViews
-import com.dev.zapfit.R
+import com.dev.endurain.R
 
 class ZapfitHrWidget : AppWidgetProvider() {
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:zapfit/core/services/gpx_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/gpx_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 import 'package:flutter/foundation.dart';
 
 /// Monitors a folder for new GPX/TCX files and auto-imports them.

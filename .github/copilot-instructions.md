@@ -1,4 +1,4 @@
-# Copilot Instructions for ZAPFIT
+# Copilot Instructions for Endurain Mobile
 
 ## Tech Stack
 - **Flutter**: 3.38+ (stable channel)

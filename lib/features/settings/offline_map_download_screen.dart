@@ -3,9 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:zapfit/core/services/map_cache_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/constants/map_constants.dart';
+import 'package:endurain/core/services/map_cache_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/constants/map_constants.dart';
 
 class OfflineMapDownloadScreen extends StatefulWidget {
   const OfflineMapDownloadScreen({super.key});
@@ -29,16 +29,52 @@ class _OfflineMapDownloadScreenState extends State<OfflineMapDownloadScreen> {
   int _total = 0;
   String _status = '';
   List<DownloadedRegionInfo> _downloadedRegions = [];
+  int _autoCacheFiles = 0;
+  int _autoCacheBytes = 0;
+  bool _clearingAutoCache = false;
 
   @override
   void initState() {
     super.initState();
     _loadDownloadedRegions();
+    _loadAutoCacheSize();
   }
 
   Future<void> _loadDownloadedRegions() async {
     final regions = await _cacheService.getDownloadedRegions();
     if (mounted) setState(() => _downloadedRegions = regions);
+  }
+
+  Future<void> _loadAutoCacheSize() async {
+    final size = await _cacheService.getAutoCacheSize();
+    if (mounted) {
+      setState(() {
+        _autoCacheFiles = size.files;
+        _autoCacheBytes = size.bytes;
+      });
+    }
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes Б';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} КБ';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} МБ';
+  }
+
+  Future<void> _clearAutoCache() async {
+    if (_clearingAutoCache) return;
+    setState(() => _clearingAutoCache = true);
+    try {
+      await _cacheService.clearAutoCache();
+      await _loadAutoCacheSize();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Автокеш очищен'), backgroundColor: Colors.green),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _clearingAutoCache = false);
+    }
   }
 
   Future<void> _startDownload() async {
@@ -271,6 +307,35 @@ class _OfflineMapDownloadScreenState extends State<OfflineMapDownloadScreen> {
                             onPressed: _isDownloading ? null : _startDownload,
                             icon: Icon(_isDownloading ? Icons.hourglass_empty : Icons.download),
                             label: Text(_isDownloading ? 'Скачивание...' : 'Скачать регион'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Автокеш просмотренных карт', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'То что просто листали онлайн сохраняется само (лимит 5000 файлов / 300 МБ, старые удаляются первыми). Скачанные регионы кнопка не трогает.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
+                        Text('$_autoCacheFiles тайлов • ${_formatBytes(_autoCacheBytes)}',
+                            style: const TextStyle(fontSize: 13)),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: (_autoCacheFiles == 0 || _clearingAutoCache) ? null : _clearAutoCache,
+                            icon: Icon(_clearingAutoCache ? Icons.hourglass_empty : Icons.delete_outline),
+                            label: Text(_clearingAutoCache ? 'Очистка...' : 'Очистить автокеш'),
                           ),
                         ),
                       ],

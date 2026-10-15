@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/goals_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/utils/riegel_predictor.dart';
-import 'package:zapfit/core/utils/vdot_calculator.dart';
+import 'package:endurain/core/services/goals_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/utils/riegel_predictor.dart';
+import 'package:endurain/core/utils/vdot_calculator.dart';
 
 class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});

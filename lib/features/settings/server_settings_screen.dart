@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
-import 'package:zapfit/core/utils/validators.dart';
-import 'package:zapfit/core/utils/dialog_utils.dart';
-import 'package:zapfit/core/constants/ui_constants.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
+import 'package:endurain/core/utils/validators.dart';
+import 'package:endurain/core/utils/dialog_utils.dart';
+import 'package:endurain/core/constants/ui_constants.dart';
 
 class ServerSettingsScreen extends StatefulWidget {
   const ServerSettingsScreen({super.key, this.onLogout});

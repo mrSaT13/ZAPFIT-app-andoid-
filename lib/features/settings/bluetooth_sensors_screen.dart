@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 

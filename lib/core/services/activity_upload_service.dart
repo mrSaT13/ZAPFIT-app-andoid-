@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/gpx_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/gpx_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
 
 class ActivityUploadService {
   final ApiClient _apiClient = ApiClient();

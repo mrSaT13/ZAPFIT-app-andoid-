@@ -1,7 +1,7 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/models/device_model.dart';
-import 'package:zapfit/core/services/miband_protocol.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/models/device_model.dart';
+import 'package:endurain/core/services/miband_protocol.dart';
 
 /// Coordinator for Huami devices (Mi Band 2/3/4, Amazfit Bip, GTS, GTR, T-Rex, etc.).
 /// These use the 0xFEE1 service with AES/ECB or HMAC-SHA256 auth.

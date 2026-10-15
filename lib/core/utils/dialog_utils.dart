@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 
 /// Utility class for showing platform-adaptive dialogs
 class DialogUtils {

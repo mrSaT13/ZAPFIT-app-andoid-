@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/utils/trusted_http_client.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/trusted_http_client.dart';
+import 'package:endurain/core/utils/url_utils.dart';
 
 /// WebSocket service for real-time notifications from the Endurain server.
 ///

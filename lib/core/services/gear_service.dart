@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/models/gear_model.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/gear_photo_sync_service.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/models/gear_model.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/gear_photo_sync_service.dart';
 
 class GearService extends ChangeNotifier {
   final ApiClient _apiClient = serviceLocator<ApiClient>();

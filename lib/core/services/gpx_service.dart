@@ -1,16 +1,72 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:xml/xml.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
+
+// Isolate entry for heavy GPX parse (XML + distance) — offloads 10k+ points from UI
+Map<String, dynamic> _parseGpxEntry(String text) {
+  final doc = XmlDocument.parse(text);
+  final trackPointElements = doc.findAllElements('trkpt').toList();
+  if (trackPointElements.isEmpty) throw StateError('No track points in GPX');
+  final trkElement = doc.findAllElements('trk').firstOrNull;
+  final originalTrkName = trkElement?.findElements('name').firstOrNull?.innerText.trim() ?? '';
+  String rawName = originalTrkName;
+  if (rawName.isEmpty || rawName.toLowerCase().startsWith('sportstracker-')) {
+    final metaDesc = doc.findAllElements('metadata').firstOrNull?.findElements('desc').firstOrNull?.innerText.trim() ??
+                     doc.findAllElements('desc').firstOrNull?.innerText.trim();
+    if (metaDesc != null && metaDesc.isNotEmpty) rawName = metaDesc;
+  }
+  final name = rawName.isNotEmpty ? rawName : 'gpx_import';
+  final kindSource = '${originalTrkName} $name'.toLowerCase();
+  final rawPoints = <Map<String, dynamic>>[];
+  double totalDist = 0.0;
+  double? prevLat; double? prevLon;
+  DateTime? prevTs;
+  for (final el in trackPointElements) {
+    final lat = double.tryParse(el.getAttribute('lat') ?? '');
+    final lon = double.tryParse(el.getAttribute('lon') ?? '');
+    if (lat == null || lon == null) continue;
+    final ele = double.tryParse(el.findElements('ele').firstOrNull?.innerText ?? '');
+    final timeStr = el.findElements('time').firstOrNull?.innerText;
+    DateTime ts;
+    if (timeStr != null) {
+      ts = DateTime.tryParse(timeStr)?.toLocal() ?? (prevTs != null ? prevTs.add(const Duration(seconds: 1)) : DateTime.now());
+    } else {
+      ts = prevTs != null ? prevTs.add(const Duration(seconds: 1)) : DateTime.now();
+    }
+    if (prevLat != null && prevLon != null) {
+      totalDist += Geolocator.distanceBetween(prevLat, prevLon, lat, lon);
+    }
+    // Speed/HR/Cadence from extensions (gpxtpx)
+    double? speed;
+    final speedElem = el.findElements('speed').firstOrNull ??
+                      el.findAllElements('ns3:speed').firstOrNull ??
+                      el.findAllElements('gpxtpx:speed').firstOrNull;
+    if (speedElem != null) speed = double.tryParse(speedElem.innerText);
+    int? hr;
+    final hrElem = el.findAllElements('gpxtpx:hr').firstOrNull ??
+                   el.findAllElements('ns3:hr').firstOrNull ??
+                   el.findAllElements('hr').firstOrNull;
+    if (hrElem != null) hr = int.tryParse(hrElem.innerText);
+    int? cadence;
+    final cadElem = el.findAllElements('gpxtpx:cad').firstOrNull ??
+                    el.findAllElements('ns3:cad').firstOrNull;
+    if (cadElem != null) cadence = int.tryParse(cadElem.innerText);
+    rawPoints.add({'lat': lat, 'lon': lon, 'ele': ele, 'tsMs': ts.millisecondsSinceEpoch, 'dist': totalDist, 'speed': speed, 'hr': hr, 'cad': cadence});
+    prevLat = lat; prevLon = lon; prevTs = ts;
+  }
+  return {'name': name, 'kindSource': kindSource, 'rawPoints': rawPoints, 'totalDist': totalDist};
+}
 
 class ImportProgress {
   final int total;
@@ -118,27 +174,32 @@ class GpxService {
 
   Future<int> importFromPath(String filePath) async {
     final text = await File(filePath).readAsString();
-    final doc = XmlDocument.parse(text);
-    
-    final trkElement = doc.findAllElements('trk').firstOrNull;
-    final originalTrkName = trkElement?.findElements('name').firstOrNull?.innerText.trim() ?? '';
-    // Prefer <trk><name>, fallback to <metadata><desc> (Sports Tracker "Аэробная длительная"), then filename
-    String rawName = originalTrkName;
-    if (rawName.isEmpty || rawName.toLowerCase().startsWith('sportstracker-')) {
-      final metaDesc = doc.findAllElements('metadata').firstOrNull?.findElements('desc').firstOrNull?.innerText.trim() ??
-                       doc.findAllElements('desc').firstOrNull?.innerText.trim();
-      if (metaDesc != null && metaDesc.isNotEmpty) rawName = metaDesc;
+    // Heavy XML parse offloaded to isolate (10k+ points) — avoids UI jank
+    final parsed = await compute(_parseGpxEntry, text);
+    String name = parsed['name'] as String;
+    if (name == 'gpx_import' || name.isEmpty) name = p.basenameWithoutExtension(filePath);
+    final kindSource = parsed['kindSource'] as String;
+    final rawPoints = (parsed['rawPoints'] as List).cast<Map<String, dynamic>>();
+    final totalDist = parsed['totalDist'] as double;
+    if (rawPoints.isEmpty) throw StateError('No valid track points');
+    DateTime? firstTs;
+    DateTime? lastTs;
+    for (final r in rawPoints) {
+      final tsMs = r['tsMs'] as int?;
+      if (tsMs != null) {
+        final ts = DateTime.fromMillisecondsSinceEpoch(tsMs);
+        firstTs ??= ts;
+        lastTs = ts;
+      }
     }
-    final name = rawName.isNotEmpty ? rawName : p.basenameWithoutExtension(filePath);
-    // For kind detection use BOTH original trk name and final name (so RollerSkiing not lost when we fallback to desc)
-    final kindSource = '${originalTrkName} $name'.toLowerCase();
-    
-    final trackPointElements = doc.findAllElements('trkpt').toList();
-    if (trackPointElements.isEmpty) throw StateError('No track points in GPX');
+    firstTs ??= DateTime.now();
+    lastTs ??= firstTs;
+    final startedAt = firstTs;
+    final endedAt = lastTs;
+    final durationSec = endedAt.difference(startedAt).inSeconds;
 
     ActivityKind kind = ActivityKind.run;
-    final nameLower = kindSource;
-    
+    final nameLower = kindSource.toLowerCase();
     if (nameLower.contains('велосипед') || nameLower.contains('cycling') || nameLower.contains('bike') || nameLower.contains('вело')) {
       kind = ActivityKind.roadCycling;
     } else if (nameLower.contains('лыжероллер') || nameLower.contains('roller') || nameLower.contains('rollerski')) {
@@ -154,42 +215,6 @@ class GpxService {
     } else if (nameLower.contains('ролик') || nameLower.contains('inline')) {
       kind = ActivityKind.inlineSkating;
     }
-
-    // First pass: parse raw points and compute distance/startedAt without DB
-    // so upsert gets correct distance (64km) and dedup via title+time works
-    final rawPoints = <Map<String, dynamic>>[];
-    double totalDist = 0.0;
-    double? prevLat;
-    double? prevLon;
-    DateTime? firstTs;
-    DateTime? lastTs;
-    DateTime? prevTs;
-    for (final element in trackPointElements) {
-      final lat = double.tryParse(element.getAttribute('lat') ?? '');
-      final lon = double.tryParse(element.getAttribute('lon') ?? '');
-      if (lat == null || lon == null) continue;
-      final ele = double.tryParse(element.findElements('ele').firstOrNull?.innerText ?? '');
-      final timeStr = element.findElements('time').firstOrNull?.innerText;
-      DateTime ts;
-      if (timeStr != null) {
-        ts = DateTime.tryParse(timeStr)?.toLocal() ?? (prevTs != null ? prevTs.add(const Duration(seconds: 1)) : DateTime.now());
-      } else {
-        ts = prevTs != null ? prevTs.add(const Duration(seconds: 1)) : DateTime.now();
-      }
-      if (firstTs == null) firstTs = ts;
-      lastTs = ts;
-      if (prevLat != null && prevLon != null) {
-        totalDist += distanceInMeters(prevLat, prevLon, lat, lon);
-      }
-      rawPoints.add({'lat': lat, 'lon': lon, 'ele': ele, 'ts': ts, 'dist': totalDist, 'elem': element});
-      prevLat = lat;
-      prevLon = lon;
-      prevTs = ts;
-    }
-    if (rawPoints.isEmpty) throw StateError('No valid track points');
-    final startedAt = firstTs ?? DateTime.now();
-    final endedAt = lastTs ?? startedAt;
-    final durationSec = endedAt.difference(startedAt).inSeconds;
 
     final activityId = await _repository.upsertActivity(
       ActivityRecord(
@@ -211,25 +236,26 @@ class GpxService {
       final lat = raw['lat'] as double;
       final lon = raw['lon'] as double;
       final ele = raw['ele'] as double?;
-      final timestamp = raw['ts'] as DateTime;
+      final tsMs = raw['tsMs'] as int?;
+      final timestamp = tsMs != null ? DateTime.fromMillisecondsSinceEpoch(tsMs) : (raw['ts'] as DateTime? ?? DateTime.now());
       final dist = raw['dist'] as double;
-      final element = raw['elem'] as XmlElement;
-
-      double? speed;
-      final speedElem = element.findElements('speed').firstOrNull ?? 
-                        element.findAllElements('ns3:speed').firstOrNull ??
-                        element.findAllElements('gpxtpx:speed').firstOrNull;
-      
-      if (speedElem != null) {
-        speed = double.tryParse(speedElem.innerText);
-      }
-
-      int? hr;
-      final hrElem = element.findAllElements('gpxtpx:hr').firstOrNull ??
-                      element.findAllElements('ns3:hr').firstOrNull ??
-                      element.findAllElements('hr').firstOrNull;
-      if (hrElem != null) {
-        hr = int.tryParse(hrElem.innerText);
+      double? speed = raw['speed'] as double?;
+      int? hr = raw['hr'] as int?;
+      // Legacy fallback: if isolate didn't parse speed/hr, try XmlElement (for old backups)
+      if ((speed == null || hr == null) && raw.containsKey('elem')) {
+        final element = raw['elem'] as XmlElement;
+        if (speed == null) {
+          final speedElem = element.findElements('speed').firstOrNull ??
+                            element.findAllElements('ns3:speed').firstOrNull ??
+                            element.findAllElements('gpxtpx:speed').firstOrNull;
+          if (speedElem != null) speed = double.tryParse(speedElem.innerText);
+        }
+        if (hr == null) {
+          final hrElem = element.findAllElements('gpxtpx:hr').firstOrNull ??
+                          element.findAllElements('ns3:hr').firstOrNull ??
+                          element.findAllElements('hr').firstOrNull;
+          if (hrElem != null) hr = int.tryParse(hrElem.innerText);
+        }
       }
 
       final point = ActivityPoint(

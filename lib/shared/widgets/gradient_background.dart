@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 
 class GradientBackground extends StatelessWidget {
   final Widget child;

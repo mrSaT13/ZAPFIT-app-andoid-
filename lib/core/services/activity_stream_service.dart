@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/di/service_locator.dart';
 
 class ActivityStreamService {
   final ApiClient _apiClient = serviceLocator<ApiClient>();

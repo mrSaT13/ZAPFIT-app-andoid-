@@ -157,7 +157,7 @@
 
         <!-- ZAPFIT home screen widgets -->
         <receiver
-            android:name="com.dev.zapfit.widget.ZapfitDailyWidget"
+            android:name="com.endurain.endurain_mobile.widget.ZapfitDailyWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -168,7 +168,7 @@
         </receiver>
 
         <receiver
-            android:name="com.dev.zapfit.widget.ZapfitSummaryWidget"
+            android:name="com.endurain.endurain_mobile.widget.ZapfitSummaryWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -179,7 +179,7 @@
         </receiver>
 
         <receiver
-            android:name="com.dev.zapfit.widget.ZapfitSleepWidget"
+            android:name="com.endurain.endurain_mobile.widget.ZapfitSleepWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -190,7 +190,7 @@
         </receiver>
 
         <receiver
-            android:name="com.dev.zapfit.widget.ZapfitHrWidget"
+            android:name="com.endurain.endurain_mobile.widget.ZapfitHrWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

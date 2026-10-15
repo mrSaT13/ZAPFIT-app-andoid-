@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/app.dart';
-import 'package:zapfit/core/di/injection.dart' as di;
+import 'package:endurain/app.dart';
+import 'package:endurain/core/di/injection.dart' as di;
 import 'package:health/health.dart';
 
 void main() async {

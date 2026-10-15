@@ -1,8 +1,8 @@
-﻿name: zapfit
-description: "ZAPFIT fitness tracking app (originally based on Endurain, heavily reworked)."
+﻿name: endurain
+description: "ZAPFIT tracking mobile app (fork of Endurain)."
 publish_to: 'none'
 
-version: 0.8.9+35
+version: 0.8.9+38
 
 environment:
   sdk: ^3.0.0

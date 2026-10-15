@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
 
 class BackgroundTrackingService {
   BackgroundTrackingService._();

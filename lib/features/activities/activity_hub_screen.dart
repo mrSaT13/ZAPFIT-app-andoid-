@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/features/map/map_screen.dart';
-import 'package:zapfit/features/activities/activities_screen.dart';
-import 'package:zapfit/features/activities/tabs/gear_tab.dart';
-import 'package:zapfit/features/activities/tabs/goals_tab.dart';
-import 'package:zapfit/features/activities/widgets/activity_calendar_sheet.dart';
-import 'package:zapfit/features/search/search_screen.dart';
-import 'package:zapfit/core/services/activity_sync_service.dart';
-import 'package:zapfit/core/services/activity_tracking_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/gpx_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/features/map/map_screen.dart';
+import 'package:endurain/features/activities/activities_screen.dart';
+import 'package:endurain/features/activities/tabs/gear_tab.dart';
+import 'package:endurain/features/activities/tabs/goals_tab.dart';
+import 'package:endurain/features/activities/tabs/preparation_tab.dart';
+import 'package:endurain/features/activities/widgets/activity_calendar_sheet.dart';
+import 'package:endurain/features/search/search_screen.dart';
+import 'package:endurain/core/services/activity_sync_service.dart';
+import 'package:endurain/core/services/activity_tracking_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/gpx_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class ActivityHubScreen extends StatefulWidget {
   const ActivityHubScreen({super.key});
@@ -32,7 +33,7 @@ class _ActivityHubScreenState extends State<ActivityHubScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _isRecording = _trackingService.currentSnapshot.isRecording;
     _trackingSub = _trackingService.snapshotStream.listen((snap) {
       if (!mounted) return;
@@ -157,14 +158,16 @@ class _ActivityHubScreenState extends State<ActivityHubScreen> with SingleTicker
         ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: false,
+          isScrollable: true,
+          tabAlignment: TabAlignment.center,
           indicatorSize: TabBarIndicatorSize.label,
-          labelPadding: EdgeInsets.zero,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 12),
           tabs: [
             Tab(text: l10n.tabRecord, icon: const Icon(Icons.play_circle_outline, size: 20)),
             Tab(text: l10n.tabHistory, icon: const Icon(Icons.history, size: 20)),
             Tab(text: l10n.tabGear, icon: const Icon(Icons.inventory_2_outlined, size: 20)),
             const Tab(text: 'Цели', icon: Icon(Icons.flag_outlined, size: 20)),
+            const Tab(text: 'Подготовка', icon: Icon(Icons.emoji_events_outlined, size: 20)),
           ],
         ),
       ),
@@ -182,6 +185,7 @@ class _ActivityHubScreenState extends State<ActivityHubScreen> with SingleTicker
                 const ActivitiesScreen(hideAppBar: true),
                 const GearTab(),
                 const GoalsTab(),
+                const PreparationTab(),
               ],
             ),
           ),

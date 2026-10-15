@@ -242,7 +242,7 @@ class XiaomiBleAuthService {
 
     // Call native Xiaomi auth manager
     try {
-      final platform = MethodChannel('com.zapfit/xiaomi_auth');
+      final platform = MethodChannel('com.endurain/xiaomi_auth');
       final result = await platform.invokeMethod('connectAndAuth', {
         'macAddress': deviceId,
         'authKey': keyHex,

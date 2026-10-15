@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/features/activities/activity_detail_screen.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class SearchScreen extends StatefulWidget {

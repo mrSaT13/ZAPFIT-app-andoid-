@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
+import 'package:endurain/core/services/health_service.dart';
 import 'package:intl/intl.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/features/health/tabs/water_history_screen.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/features/health/tabs/water_history_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/utils/hydration_need_calculator.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/utils/hydration_need_calculator.dart';
 
 class WaterTab extends StatelessWidget {
   const WaterTab({super.key});

@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/zapfit_uploader.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/health_connect_service.dart';
-import 'package:zapfit/core/services/widgets_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
-import 'package:zapfit/core/utils/sleep_score_calculator.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/endurain_uploader.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/health_connect_service.dart';
+import 'package:endurain/core/services/widgets_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/utils/url_utils.dart';
+import 'package:endurain/core/utils/sleep_score_calculator.dart';
 import 'package:flutter/foundation.dart';
 
 class HealthService extends ChangeNotifier {
@@ -478,7 +478,7 @@ class HealthService extends ChangeNotifier {
         debugPrint('HealthSync: Push FAILED for $tableName via API: $e');
         debugPrint('HealthSync: Trying direct POST fallback...');
       }
-      // Fallback: direct JSON POST with ZapfitAuthManager headers
+      // Fallback: direct JSON POST with EndurainAuthManager headers
       try {
         await _directPost(endpoint, record.toJson() as Map<String, dynamic>?, tableName, record);
       } catch (e2) {
@@ -492,7 +492,7 @@ class HealthService extends ChangeNotifier {
     final serverUrl = await storage.getServerUrl();
     if (serverUrl == null || serverUrl.isEmpty) throw Exception('Server URL not configured');
     
-    final authManager = ZapfitAuthManager(baseUrl: serverUrl);
+    final authManager = EndurainAuthManager(baseUrl: serverUrl);
     final authHeaders = await authManager.getValidAuthHeaders();
     
     final url = UrlUtils.buildUrl(serverUrl, endpoint);

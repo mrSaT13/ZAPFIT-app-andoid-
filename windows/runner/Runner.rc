@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.dev" "\0"
-            VALUE "FileDescription", "ZAPFIT" "\0"
+            VALUE "FileDescription", "endurain" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "zapfit" "\0"
+            VALUE "InternalName", "endurain" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.dev. All rights reserved." "\0"
-            VALUE "OriginalFilename", "zapfit.exe" "\0"
-            VALUE "ProductName", "ZAPFIT" "\0"
+            VALUE "OriginalFilename", "endurain.exe" "\0"
+            VALUE "ProductName", "endurain" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

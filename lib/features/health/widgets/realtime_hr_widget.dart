@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
 
 /// Real-time heart rate display widget for BLE-connected devices.
 /// Shows current HR, HR zone, and a simple live graph.

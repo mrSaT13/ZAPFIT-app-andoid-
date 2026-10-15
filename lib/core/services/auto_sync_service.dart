@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:zapfit/core/services/activity_sync_service.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/local_notification_service.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/steps_counter_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/services/activity_sync_service.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/local_notification_service.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/steps_counter_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
 
-const _kAutoSyncTaskName = 'com.dev.zapfit.autoSync';
-const _kNotifPollingTaskName = 'com.dev.zapfit.notifPolling';
+const _kAutoSyncTaskName = 'com.zapfit.endurain.autoSync';
+const _kNotifPollingTaskName = 'com.zapfit.endurain.notifPolling';
 
 /// Background sync status.
 enum AutoSyncStatus { idle, syncing, success, error, offline }

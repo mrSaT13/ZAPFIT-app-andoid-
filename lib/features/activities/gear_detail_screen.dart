@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/models/gear_model.dart';
-import 'package:zapfit/core/models/gear_photo.dart';
-import 'package:zapfit/core/models/gear_replacement.dart';
-import 'package:zapfit/core/services/gear_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/gear_photo_sync_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/gear_replacement_history.dart';
-import 'package:zapfit/features/activities/activity_detail_screen.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/models/gear_model.dart';
+import 'package:endurain/core/models/gear_photo.dart';
+import 'package:endurain/core/models/gear_replacement.dart';
+import 'package:endurain/core/services/gear_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/gear_photo_sync_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/gear_replacement_history.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -965,11 +965,22 @@ _detailRow(theme, 'Стоимость покупки', '${d.purchaseValue!.toStr
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _sectionHeader(theme, 'Фото'),
-            TextButton.icon(
-              onPressed: _addPhoto,
-              icon: const Icon(Icons.add_a_photo, size: 18),
-              label: const Text('Добавить'),
+            _sectionHeader(theme, 'Фото (${_photos.length})'),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_photos.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _openAllPhotos(),
+                    icon: const Icon(Icons.grid_view, size: 18),
+                    label: const Text('Показать все'),
+                  ),
+                TextButton.icon(
+                  onPressed: _addPhoto,
+                  icon: const Icon(Icons.add_a_photo, size: 18),
+                  label: const Text('Добавить'),
+                ),
+              ],
             ),
           ],
         ),
@@ -1114,6 +1125,19 @@ _detailRow(theme, 'Стоимость покупки', '${d.purchaseValue!.toStr
     );
   }
 
+  Future<void> _openAllPhotos() async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _AllPhotosScreen(
+          gearId: widget.gear.id,
+          gearNickname: widget.gear.nickname,
+        ),
+      ),
+    );
+    if (changed == true && mounted) _loadData();
+  }
+
   Future<void> _deletePhoto(GearPhoto photo) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -1176,6 +1200,224 @@ class _GalleryScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// Все фото снаряжения: тап — выбрать/отменить, кнопки «Выбрать все» и удаление.
+/// Нужно для чистки дубликатов после синка с сервером.
+class _AllPhotosScreen extends StatefulWidget {
+  final int gearId;
+  final String gearNickname;
+
+  const _AllPhotosScreen({required this.gearId, required this.gearNickname});
+
+  @override
+  State<_AllPhotosScreen> createState() => _AllPhotosScreenState();
+}
+
+class _AllPhotosScreenState extends State<_AllPhotosScreen> {
+  List<GearPhoto> _photos = [];
+  final Set<int> _selected = {};
+  bool _loading = true;
+  bool _deleting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  Future<void> _reload() async {
+    setState(() => _loading = true);
+    try {
+      final photos = await LocalActivityRepository.instance.getGearPhotos(widget.gearId);
+      if (!mounted) return;
+      setState(() {
+        _photos = photos;
+        _selected.removeWhere((id) => !photos.any((p) => p.id == id));
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _toggleSelect(GearPhoto photo) {
+    final id = photo.id;
+    if (id == null) return;
+    setState(() {
+      if (_selected.contains(id)) {
+        _selected.remove(id);
+      } else {
+        _selected.add(id);
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      _selected
+        ..clear()
+        ..addAll(_photos.where((p) => p.id != null).map((p) => p.id!));
+    });
+  }
+
+  void _clearSelection() {
+    setState(() => _selected.clear());
+  }
+
+  Future<void> _deleteSelected() async {
+    if (_selected.isEmpty || _deleting) return;
+    final count = _selected.length;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить фото?'),
+        content: Text('Будет удалено фото: $count. С сервера тоже удалим, файлы сотрём навсегда.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _deleting = true);
+    try {
+      final repo = LocalActivityRepository.instance;
+      final toDelete = _photos.where((p) => p.id != null && _selected.contains(p.id)).toList();
+      for (final photo in toDelete) {
+        if (photo.serverId != null) {
+          try {
+            await serviceLocator<GearService>().deleteGearImage(photo.serverId!);
+          } catch (_) {}
+        }
+        try {
+          final f = File(photo.filePath);
+          if (await f.exists()) await f.delete();
+        } catch (_) {}
+        try {
+          await repo.deleteGearPhoto(photo.id!);
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Удалено фото: ${toDelete.length}'), backgroundColor: Colors.green),
+      );
+      Navigator.pop(context, true);
+    } finally {
+      if (mounted) setState(() => _deleting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_selected.isEmpty
+            ? '${widget.gearNickname} • ${_photos.length}'
+            : 'Выбрано: ${_selected.length}'),
+        actions: [
+          if (_selected.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.deselect),
+              tooltip: 'Снять выбор',
+              onPressed: _clearSelection,
+            ),
+          IconButton(
+            icon: const Icon(Icons.select_all),
+            tooltip: 'Выбрать все',
+            onPressed: _selectAll,
+          ),
+          if (_selected.isNotEmpty)
+            IconButton(
+              icon: _deleting
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.delete, color: Colors.red),
+              tooltip: 'Удалить выбранные',
+              onPressed: _deleteSelected,
+            ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _photos.isEmpty
+              ? const Center(child: Text('Нет фото', style: TextStyle(color: Colors.grey)))
+              : RefreshIndicator(
+                  onRefresh: _reload,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: _photos.length,
+                    itemBuilder: (ctx, i) {
+                      final photo = _photos[i];
+                      final id = photo.id;
+                      final isSelected = id != null && _selected.contains(id);
+                      final file = File(photo.filePath);
+                      return GestureDetector(
+                        onTap: () => _toggleSelect(photo),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: file.existsSync()
+                                  ? Image.file(
+                                      file,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const ColoredBox(
+                                        color: Colors.black12,
+                                        child: Icon(Icons.broken_image, color: Colors.grey),
+                                      ),
+                                    )
+                                  : const ColoredBox(
+                                      color: Colors.black12,
+                                      child: Icon(Icons.broken_image, color: Colors.grey),
+                                    ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.35),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 3,
+                                  ),
+                                ),
+                              ),
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.black.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  isSelected ? Icons.check : Icons.check_box_outline_blank,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }

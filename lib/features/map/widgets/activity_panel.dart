@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zapfit/core/models/activity_models.dart';
+import 'package:endurain/core/models/activity_models.dart';
 
 enum PanelState { collapsed, half, full }
 

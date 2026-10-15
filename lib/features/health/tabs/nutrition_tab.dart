@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/utils/tdee_calculator.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/utils/tdee_calculator.dart';
 
 class NutritionTab extends StatefulWidget {
   const NutritionTab({super.key});

@@ -1,9 +1,9 @@
 ﻿import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/training_analysis_service.dart';
-import 'package:zapfit/features/activities/activity_detail_screen.dart';
-import 'package:zapfit/shared/widgets/secure_image.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/training_analysis_service.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
+import 'package:endurain/shared/widgets/secure_image.dart';
 
 class SimilarActivitiesScreen extends StatefulWidget {
   const SimilarActivitiesScreen({super.key, required this.activity});

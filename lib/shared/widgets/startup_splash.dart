@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
 
 class StartupSplash extends StatefulWidget {
   const StartupSplash({super.key});
@@ -88,7 +88,7 @@ class _StartupSplashState extends State<StartupSplash>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'tracking • health • fitness',
+                      '(fork endurain)',
                       style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                             color: textColor.withOpacity(0.85),
                           ),

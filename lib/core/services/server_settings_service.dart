@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:zapfit/core/models/server_settings.dart';
-import 'package:zapfit/core/services/secure_storage_service.dart';
-import 'package:zapfit/core/constants/api_constants.dart';
-import 'package:zapfit/core/utils/url_utils.dart';
+import 'package:endurain/core/models/server_settings.dart';
+import 'package:endurain/core/services/secure_storage_service.dart';
+import 'package:endurain/core/constants/api_constants.dart';
+import 'package:endurain/core/utils/url_utils.dart';
 
 /// Service for fetching and managing server settings
 class ServerSettingsService {

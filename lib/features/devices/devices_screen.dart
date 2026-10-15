@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_model.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/features/devices/device_detail_screen.dart';
+import 'package:endurain/core/models/device_model.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/features/devices/device_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class DevicesScreen extends StatefulWidget {

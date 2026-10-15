@@ -5,12 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zapfit/core/models/device_model.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/coordinators/coordinator_registry.dart';
-import 'package:zapfit/core/services/xiaomi_ble_auth_service.dart';
-import 'package:zapfit/core/services/auto_reconnect_service.dart';
-import 'package:zapfit/core/services/companion_device_service.dart';
+import 'package:endurain/core/models/device_model.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/coordinators/coordinator_registry.dart';
+import 'package:endurain/core/services/xiaomi_ble_auth_service.dart';
+import 'package:endurain/core/services/auto_reconnect_service.dart';
+import 'package:endurain/core/services/companion_device_service.dart';
 
 enum BluetoothSensorType { heartRate, cadence, power, unknown }
 

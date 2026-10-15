@@ -10,7 +10,7 @@
 	<true/>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)com.dev.zapfit</string>
+		<string>$(AppIdentifierPrefix)com.endurain.endurain</string>
 	</array>
 </dict>
 </plist>

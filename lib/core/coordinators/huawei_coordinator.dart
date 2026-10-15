@@ -1,6 +1,6 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/models/device_model.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/models/device_model.dart';
 
 /// Coordinator for Huawei/Honor Band and Watch devices.
 /// Uses proprietary Huawei BLE protocol.

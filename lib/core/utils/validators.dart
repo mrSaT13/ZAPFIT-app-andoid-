@@ -1,4 +1,4 @@
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 /// Validation utility functions
 class Validators {

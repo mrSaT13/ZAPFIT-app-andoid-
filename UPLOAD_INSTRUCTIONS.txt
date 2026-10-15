@@ -1,0 +1,115 @@
+========================================
+ИНСТРУКЦИЯ ПО ЗАГРУЗКЕ ZAPFIT НА GITHUB
+(загрузка папкой через веб-браузер)
+========================================
+
+ПЕРЕД ЗАГРУЗКОЙ — ВЫПОЛНИ ШАГИ 1-5
+ПОСЛЕ ЗАГРУЗКИ — ШАГ 6
+
+--------------------------------------
+ШАГ 1. УДАЛИТЬ ФАЙЛЫ/ПАПКИ
+--------------------------------------
+Удали всё из списка ниже из папки endurain-flutter/:
+
+Файлы (просто удали):
+  zapfit-release.apk          (скомпилированный APK)
+  build_output.txt            (лог ошибки билда)
+  ($($fixed.Length)           (мусор от PowerShell)
+  ($($round2.Length)          (мусор от PowerShell)
+  проблема.jpg                (скриншот ошибки)
+  fix_encoding.ps1            (временный скрипт)
+  fix_encoding.py             (временный скрипт)
+  fix_encoding2.py            (временный скрипт)
+  endurain.iml                (настройки IntelliJ — будет пересоздан)
+  endurain-flutter.code-workspace  (настройки VS Code workspace)
+
+Папки (рекурсивно удали целиком):
+  build/                      (артефакты сборки)
+  .gradle_home/               (кэш Gradle)
+  .dart_tool/                 (кэш Dart)
+  backups/                    (ручные бэкапы)
+  server/                     (vendored репо Endurain server — не наш код)
+
+Проверь что .gitignore содержит эти строки (добавь если нет):
+  build/
+  .gradle_home/
+  .dart_tool/
+  backups/
+  *.apk
+  *.bak
+  android/local.properties
+  android/gradle.properties
+  *.iml
+  .mimocode/
+
+--------------------------------------
+ШАГ 2. ЗАМЕНИТЬ GPS КООРДИНАТЫ
+--------------------------------------
+Файл: lib/features/settings/offline_map_download_screen.dart
+
+Найди (около строки 178):
+  initialCenter: LatLng(55.75, 37.62),
+
+Замени на:
+  initialCenter: LatLng(38.7223, -9.1393),
+
+Это Lisbon — стандартная точка Endurain. Не выдаёт твоё местоположение.
+
+--------------------------------------
+ШАГ 3. ПРОВЕРИТЬ ЧТО НЕТ СЕКРЕТОВ
+--------------------------------------
+Убедись что этих файлов НЕТ в папке (или они в .gitignore):
+
+  android/key.properties       (пароли от keystore — уже в .gitignore)
+  android/local.properties     (локальные пути — добавь в .gitignore)
+  android/gradle.properties    (путь JDK — добавь в .gitignore)
+  *.keystore, *.jks            (ключи подписи — уже в .gitignore)
+  .env, *.env                  (секреты — уже в .gitignore)
+
+Проверь что key.properties НЕ отслеживается git'ом:
+  Правый клик по файлу → Properties → должен быть в .gitignore
+
+--------------------------------------
+ШАГ 4. ЗАМЕНИТЬ ТЕКСТЫ (опционально)
+--------------------------------------
+Если не хочешь ассоциироваться с Endurain публично:
+
+Файл: README.md
+  Замени "Endurain Mobile" → "ZAPFIT"
+  Замени ссылки "endurain-project/endurain-flutter" на свой репо
+
+Файл: lib/shared/widgets/startup_splash.dart
+  Найди '(fork endurain)' — замени на '(based on Endurain)' или удали
+
+Файл: lib/l10n/app_en.arb, app_ru.arb, app_pt.arb
+  Найди "@@context" — замени "Endurain Mobile" → "ZAPFIT"
+
+--------------------------------------
+ШАГ 5. ЗАГРУЗКА НА GITHUB
+--------------------------------------
+1. Зайди на github.com
+2. Создай новый репозиторий: "ZAPFIT" (или любое имя)
+3. Выбери "Public" (или Private если хочешь скрыть)
+4. НЕ ставь галочки "Add README", ".gitignore" — у нас уже есть
+5. Нажми "Create repository"
+6. На странице репо нажми "uploading an existing file"
+7. Перетащи папку endurain-flutter целиком
+8. Дождись загрузки (может занять 2-5 минут)
+9. Нажми "Commit changes"
+
+⚠️ ВАЖНО: При загрузке папкой GitHub НЕ отправляет:
+  - Папки из .gitignore (build/, .dart_tool/, .gradle_home/, backups/)
+  - Файлы .apk
+  - Файлы .keystore
+Но .gitignore файл всё равно нужен для будущих pull/push через git.
+
+--------------------------------------
+ШАГ 6. ПОСЛЕ ЗАГРУЗКИ
+--------------------------------------
+Проверь что на GitHub:
+  ✓ Папка lib/ видна и содержит .dart файлы
+  ✓ pubspec.yaml на месте
+  ✓ android/ и ios/ папки на месте
+  ✓ НЕТ файлов .apk, .keystore, key.properties
+  ✓ НЕТ папок build/, .gradle_home/, backups/
+  ✓ README.md отображается корректно

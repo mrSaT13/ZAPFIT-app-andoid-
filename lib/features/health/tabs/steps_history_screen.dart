@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 

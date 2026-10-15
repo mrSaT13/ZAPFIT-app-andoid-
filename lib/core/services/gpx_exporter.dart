@@ -1,4 +1,4 @@
-import 'package:zapfit/core/models/activity.dart';
+import 'package:endurain/core/models/activity.dart';
 import 'package:injectable/injectable.dart';
 
 @singleton
@@ -8,7 +8,7 @@ class GpxExporter {
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
       ..writeln(
-        '<gpx version="1.1" creator="ZAPFIT" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">',
+        '<gpx version="1.1" creator="Endurain Mobile" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">',
       )
       ..writeln('  <trk>')
       ..writeln('    <name>${_escapeXml(_buildActivityName(activity))}</name>')

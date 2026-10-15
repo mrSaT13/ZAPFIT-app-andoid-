@@ -1,6 +1,6 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/models/device_model.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/models/device_model.dart';
 import 'miband_coordinator.dart';
 import 'huami_coordinator.dart';
 import 'huawei_coordinator.dart';

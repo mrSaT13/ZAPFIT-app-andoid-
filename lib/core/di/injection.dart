@@ -1,18 +1,18 @@
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/core/services/bluetooth_sensor_service.dart';
-import 'package:zapfit/core/services/scale_ble_service.dart';
-// import 'package:zapfit/core/services/google_fit_service.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/activity_sync_service.dart';
-import 'package:zapfit/core/services/auth_service.dart';
-import 'package:zapfit/core/services/api_client.dart';
-import 'package:zapfit/core/services/user_service.dart';
-import 'package:zapfit/core/services/gear_service.dart';
-import 'package:zapfit/core/services/feed_service.dart';
-import 'package:zapfit/core/services/notification_service.dart';
-import 'package:zapfit/core/services/activity_stream_service.dart';
-import 'package:zapfit/core/services/websocket_service.dart';
-import 'package:zapfit/core/services/goals_service.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/services/scale_ble_service.dart';
+// import 'package:endurain/core/services/google_fit_service.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/activity_sync_service.dart';
+import 'package:endurain/core/services/auth_service.dart';
+import 'package:endurain/core/services/api_client.dart';
+import 'package:endurain/core/services/user_service.dart';
+import 'package:endurain/core/services/gear_service.dart';
+import 'package:endurain/core/services/feed_service.dart';
+import 'package:endurain/core/services/notification_service.dart';
+import 'package:endurain/core/services/activity_stream_service.dart';
+import 'package:endurain/core/services/websocket_service.dart';
+import 'package:endurain/core/services/goals_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// Initialize and register singletons used by the app.

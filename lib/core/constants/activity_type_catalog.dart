@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/models/activity.dart';
+import 'package:endurain/core/models/activity.dart';
 
 class ActivityTypeCatalogItem {
   const ActivityTypeCatalogItem({

@@ -1,7 +1,7 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:zapfit/core/models/device_coordinator.dart';
-import 'package:zapfit/core/models/device_model.dart';
-import 'package:zapfit/core/services/miband_protocol.dart';
+import 'package:endurain/core/models/device_coordinator.dart';
+import 'package:endurain/core/models/device_model.dart';
+import 'package:endurain/core/services/miband_protocol.dart';
 
 /// Coordinator for Mi Band 1/1A/1S and early Huami devices.
 /// These use the 0xFEE0 service with custom auth (no AES).

@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.dev.zapfit"
+    namespace = "com.dev.endurain"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -35,7 +35,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.dev.zapfit"
+        applicationId = "com.dev.endurain"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -44,22 +44,16 @@ android {
 
     signingConfigs {
         create("release") {
-            // key.properties is git-ignored: contributors without it still get a
-            // working build (debug-signed). See android/key.properties.example.
-            if (keystorePropertiesFile.exists()) {
-                keyAlias = keystoreProperties["keyAlias"]
-                keyPassword = keystoreProperties["keyPassword"]
-                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-                storePassword = keystoreProperties["storePassword"]
-            }
+            keyAlias = keystoreProperties["keyAlias"]
+            keyPassword = keystoreProperties["keyPassword"]
+            storeFile = file(keystoreProperties["storeFile"] ?: "")
+            storePassword = keystoreProperties["storePassword"]
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName(
-                if (keystorePropertiesFile.exists()) "release" else "debug"
-            )
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
         }

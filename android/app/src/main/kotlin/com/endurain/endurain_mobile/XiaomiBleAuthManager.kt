@@ -1,4 +1,4 @@
-package com.dev.zapfit
+package com.dev.endurain
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt

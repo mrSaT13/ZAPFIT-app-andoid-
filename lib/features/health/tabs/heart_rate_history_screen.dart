@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/models/hr_zones.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/di/service_locator.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/models/hr_zones.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/di/service_locator.dart';
 import 'package:intl/intl.dart';
 
 class HeartRateHistoryScreen extends StatelessWidget {

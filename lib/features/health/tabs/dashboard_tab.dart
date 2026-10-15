@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/utils/vo2max_calculator.dart';
-import 'package:zapfit/core/utils/tdee_calculator.dart';
-import 'package:zapfit/core/utils/vdot_calculator.dart';
-import 'package:zapfit/core/utils/recovery_score_calculator.dart';
-import 'package:zapfit/core/utils/stress_score_calculator.dart';
-import 'package:zapfit/core/utils/steps_converter.dart';
-import 'package:zapfit/core/utils/sleep_need_calculator.dart';
-import 'package:zapfit/core/utils/fitness_age_calculator.dart';
-import 'package:zapfit/core/di/service_locator.dart';
-import 'package:zapfit/features/health/widgets/training_metrics_card.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/utils/vo2max_calculator.dart';
+import 'package:endurain/core/utils/tdee_calculator.dart';
+import 'package:endurain/core/utils/vdot_calculator.dart';
+import 'package:endurain/core/utils/recovery_score_calculator.dart';
+import 'package:endurain/core/utils/stress_score_calculator.dart';
+import 'package:endurain/core/utils/steps_converter.dart';
+import 'package:endurain/core/utils/sleep_need_calculator.dart';
+import 'package:endurain/core/utils/fitness_age_calculator.dart';
+import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/features/health/widgets/training_metrics_card.dart';
 import 'package:intl/intl.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
+import 'package:endurain/l10n/app_localizations.dart';
 
 class HealthDashboardTab extends StatelessWidget {
   final void Function(int) onTabRequested;

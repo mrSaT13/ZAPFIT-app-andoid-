@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/utils/platform_utils.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/utils/platform_utils.dart';
 
 /// Screen for SSO/OAuth authentication via WebView
 class SsoWebViewScreen extends StatefulWidget {

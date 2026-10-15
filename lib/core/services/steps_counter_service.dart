@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-import 'package:zapfit/core/models/health_models.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/health_service.dart';
-import 'package:zapfit/core/services/health_connect_service.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/native_steps_reader.dart';
+import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/health_service.dart';
+import 'package:endurain/core/services/health_connect_service.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/native_steps_reader.dart';
 
 /// [comment removed - encoding corrupted]
 /// [comment removed - encoding corrupted]

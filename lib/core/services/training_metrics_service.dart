@@ -3,11 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:zapfit/core/models/training_metrics.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/utils/hr_estimator.dart';
+import 'package:endurain/core/models/training_metrics.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/utils/hr_estimator.dart';
 
 class TrainingMetricsService {
   TrainingMetricsService._();

@@ -5,17 +5,17 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as ll;
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:zapfit/core/models/activity_models.dart';
-import 'package:zapfit/core/services/activity_tracking_service.dart';
-import 'package:zapfit/core/services/app_settings_controller.dart';
-import 'package:zapfit/core/services/local_activity_repository.dart';
-import 'package:zapfit/core/services/location_service.dart';
-import 'package:zapfit/core/services/voice_coach_service.dart';
-import 'package:zapfit/core/services/training_metrics_service.dart';
-import 'package:zapfit/core/constants/map_constants.dart';
-import 'package:zapfit/features/map/widgets/activity_panel.dart';
-import 'package:zapfit/l10n/app_localizations.dart';
-import 'package:zapfit/core/services/offline_tile_provider.dart';
+import 'package:endurain/core/models/activity_models.dart';
+import 'package:endurain/core/services/activity_tracking_service.dart';
+import 'package:endurain/core/services/app_settings_controller.dart';
+import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/location_service.dart';
+import 'package:endurain/core/services/voice_coach_service.dart';
+import 'package:endurain/core/services/training_metrics_service.dart';
+import 'package:endurain/core/constants/map_constants.dart';
+import 'package:endurain/features/map/widgets/activity_panel.dart';
+import 'package:endurain/l10n/app_localizations.dart';
+import 'package:endurain/core/services/offline_tile_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -770,8 +770,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin, Wi
           subdomains: _settings.mapProvider == MapProvider.esriSatellite
               ? const []
               : const ['a', 'b', 'c'],
-          // Оффлайн-тайлы подставляются только при записи активности
-          tileProvider: _trackingSnapshot.isRecording && _offlineProvider != null
+          // Оффлайн-тайлы всегда когда есть: скачанный регион виден и без записи
+          tileProvider: _offlineProvider != null
               ? _offlineProvider!
               : NetworkTileProvider(),
         ),
