@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:endurain/core/services/competitions_service.dart';
 import 'package:endurain/core/services/local_activity_repository.dart';
 import 'package:endurain/core/services/local_notification_service.dart';
 import 'package:endurain/core/services/ollama_service.dart';
 
-/// Соревнование (локально, синхронизация с сервером — TODO под API).
+/// Соревнование. Хранится локально (offline-first) и синхронизируется с
+/// сервером (`/api/v1/competitions`): `serverId` — ссылка на серверную строку,
+/// `synced` — флаг «сервер подтверждил эту версию».
 class Competition {
   final String id;
   final String name;
@@ -19,6 +22,8 @@ class Competition {
   final int? totalParticipants;
   final int? resultTimeSec;
   final List<int> notifIds;
+  /// Серверная строка (null — ещё не создана на сервере).
+  final int? serverId;
 
   Competition({
     required this.id,
@@ -32,6 +37,7 @@ class Competition {
     this.totalParticipants,
     this.resultTimeSec,
     List<int>? notifIds,
+    this.serverId,
   }) : notifIds = notifIds ?? const [];
 
   Competition copyWith({
@@ -40,6 +46,8 @@ class Competition {
     int? totalParticipants,
     int? resultTimeSec,
     List<int>? notifIds,
+    bool? synced,
+    int? serverId,
   }) {
     return Competition(
       id: id,
@@ -47,12 +55,13 @@ class Competition {
       date: date,
       distanceKm: distanceKm,
       note: note,
-      synced: synced,
+      synced: synced ?? this.synced,
       finished: finished ?? this.finished,
       place: place ?? this.place,
       totalParticipants: totalParticipants ?? this.totalParticipants,
       resultTimeSec: resultTimeSec ?? this.resultTimeSec,
       notifIds: notifIds ?? this.notifIds,
+      serverId: serverId ?? this.serverId,
     );
   }
 
@@ -68,6 +77,7 @@ class Competition {
         'totalParticipants': totalParticipants,
         'resultTimeSec': resultTimeSec,
         'notifIds': notifIds,
+        'serverId': serverId,
       };
 
   factory Competition.fromJson(Map<String, dynamic> j) => Competition(
@@ -79,9 +89,11 @@ class Competition {
         synced: j['synced'] as bool? ?? false,
         finished: j['finished'] as bool? ?? false,
         place: (j['place'] as num?)?.toInt(),
-        totalParticipants: (j['totalParticipants'] as num?)?.toInt(),
+        totalParticipants: (j['total_participants'] as num?)?.toInt() ??
+            (j['totalParticipants'] as num?)?.toInt(),
         resultTimeSec: (j['resultTimeSec'] as num?)?.toInt(),
         notifIds: (j['notifIds'] as List?)?.map((e) => (e as num).toInt()).toList() ?? const [],
+        serverId: (j['serverId'] as num?)?.toInt(),
       );
 }
 
@@ -94,10 +106,15 @@ class PreparationTab extends StatefulWidget {
 
 class _PreparationTabState extends State<PreparationTab> {
   static const _kCompetitionsKey = 'competitions_v1';
+  static const _kTombstonesKey = 'competitions_tombstones_v1';
 
   List<Competition> _competitions = [];
   String? _selectedId;
   bool _loading = true;
+
+  /// serverId's deleted locally; pull skips re-adding them offline later
+  /// (when the DELETE reached the server) and they are pruned on success.
+  final Set<int> _tombstones = {};
 
   // Stats for selected competition
   double _avgWeeklyKm = 0;
@@ -121,8 +138,11 @@ class _PreparationTabState extends State<PreparationTab> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kCompetitionsKey);
-      final list = <Competition>[];
-      if (raw != null && raw.isNotEmpty) {
+      final tombstones = prefs.getStringList(_kTombstonesKey) ?? const [];
+      _tombstones
+        ..clear()
+        ..addAll(tombstones.map(int.parse).whereType<int>());
+      final list = <Competition>[];      if (raw != null && raw.isNotEmpty) {
         final decoded = json.decode(raw) as List;
         for (final e in decoded) {
           try {
@@ -138,6 +158,10 @@ class _PreparationTabState extends State<PreparationTab> {
             _selectedId = list.isNotEmpty ? list.first.id : null;
           }
         });
+        await _computeStats();
+        // Фоновый pull/push: подтянуть изменения с других устройств и
+        // отправить свои; затем пересчитать статистику по свежим данным.
+        await _syncWithServer();
         await _computeStats();
       }
     } catch (_) {
@@ -155,9 +179,171 @@ class _PreparationTabState extends State<PreparationTab> {
         json.encode(_competitions.map((c) => c.toJson()).toList()),
       );
     } catch (_) {}
-    // TODO(server): POST /api/v1/competitions/sync — отправить list, проставить synced=true.
-    // Пока серверного API нет: записи хранятся локально с synced=false.
+    // Серверная синхронизация — best-effort: ошибки сейчас означают
+    // «отправим при следующем синке» (synced остаётся false).
+    await _syncWithServer();
   }
+
+  /// Двусторонняя синхронизация с сервером (серверный режим only).
+  ///
+  /// Push: локальные записи с `synced=false` — POST (нет `serverId`) или PUT
+  /// (уже на сервере). Pull: серверные строки мержатся в локальный кэш;
+  /// запись с `synced=true`, которой на сервере больше нет, удалена на другом
+  /// устройстве — убираем локально вместе с notification-этапами.
+  Future<void> _syncWithServer() async {
+    if (_syncing) return;
+    _syncing = true;
+    try {
+      if (!await CompetitionsService.instance.isServerMode) return;
+      final svc = CompetitionsService.instance;
+
+      // 1) Push несинхронизированных.
+      for (var i = _competitions.length - 1; i >= 0; i--) {
+        final c = _competitions[i];
+        if (c.synced) continue;
+        if (c.serverId != null) {
+          final ok = await svc.updateCompetition(
+            c.serverId!,
+            name: c.name,
+            date: c.date,
+            distanceKm: c.distanceKm,
+            note: c.note,
+            finished: c.finished,
+            place: c.place,
+            totalParticipants: c.totalParticipants,
+            resultTimeSec: c.resultTimeSec,
+          );
+          if (ok && mounted) {
+            setState(() => _competitions[i] = c.copyWith(synced: true));
+          }
+        } else {
+          final serverId = await svc.createCompetition(
+            name: c.name,
+            date: c.date,
+            distanceKm: c.distanceKm,
+            note: c.note,
+            finished: c.finished,
+            place: c.place,
+            totalParticipants: c.totalParticipants,
+            resultTimeSec: c.resultTimeSec,
+          );
+          if (serverId != null && mounted) {
+            setState(() => _competitions[i] = c.copyWith(synced: true, serverId: serverId));
+          }
+        }
+      }
+
+      // 2) Pull серверных строк (надгробия от локальных удалений пропускаем,
+      // чтобы удалённая запись не «рассосалась» обратно после offline-удаления.
+      final remote = await svc.fetchCompetitions();
+      for (final r in remote) {
+        if (_tombstones.contains(r.id)) continue;
+        final i = _competitions.indexWhere(
+          (c) => c.serverId == r.id || (!c.synced && c.serverId == null && _sameCompetition(c, r)),
+        );
+        if (i < 0) {
+          // Новая запись с другого устройства — добавляем и планируем этапы.
+          final local = _fromServer(r);
+          final ids = await _scheduleStages(local);
+          if (mounted) {
+            setState(() => _competitions.add(local.copyWith(notifIds: ids)));
+            _selectedId ??= local.id;
+          }
+          continue;
+        }
+        final c = _competitions[i];
+        List<int> notifIds = c.notifIds;
+        // Дата/дистанция могли измениться на сервере — перераспланировали этапы.
+        if (!c.synced && c.serverId == null) {
+          await _cancelStages(c);
+          notifIds = await _scheduleStages(_fromServer(r));
+        }
+        if (mounted) {
+          setState(() {
+            _competitions[i] = Competition(
+              id: c.id,
+              name: r.name,
+              date: r.date,
+              distanceKm: r.distanceKm,
+              note: r.note,
+              synced: true,
+              finished: r.status == 'completed',
+              place: r.place,
+              totalParticipants: r.totalParticipants,
+              resultTimeSec: r.resultTimeSec,
+              notifIds: notifIds,
+              serverId: r.id,
+            );
+          });
+        }
+      }
+
+      // 3) Локальные «синхронизированные» записи, которых нет на сервере:
+      // удалены на другом устройстве → удаляем и здесь.
+      final remoteIds = remote.map((r) => r.id).toSet();
+      for (var i = _competitions.length - 1; i >= 0; i--) {
+        final c = _competitions[i];
+        if (c.serverId != null && c.synced && !remoteIds.contains(c.serverId)) {
+          await _cancelStages(c);
+          if (mounted) {
+            setState(() {
+              _competitions.removeAt(i);
+              if (_selectedId == c.id) {
+                _selectedId = _competitions.isNotEmpty ? _competitions.first.id : null;
+              }
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('PreparationTab: sync error: $e');
+    } finally {
+      _syncing = false;
+      // Pull-результаты (мерж, удаление) надо тоже положить в prefs.
+      await _persistCompetitions();
+    }
+  }
+
+  bool _syncing = false;
+
+  /// Сохраняет список локально, БЕЗ запуска синхронизации (чтобы не зациклиться).
+  Future<void> _persistCompetitions() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _kCompetitionsKey,
+        json.encode(_competitions.map((c) => c.toJson()).toList()),
+      );
+    } catch (_) {}
+  }
+
+  /// Совпадение «упрощённое» для дедупликации локальной записи, которую
+  /// создали на устройстве без сети, со строчкой другого клиента.
+  bool _sameCompetition(Competition c, ServerCompetition r) {
+    final sameDay = c.date.year == r.date.year && c.date.month == r.date.month && c.date.day == r.date.day;
+    return c.name == r.name && sameDay && (c.distanceKm - r.distanceKm).abs() < 0.05;
+  }
+
+  /// Локальная запись из серверной — локальный id стабилизирован чтобы
+  /// сохранялись ссылки (notifications base id и пр.).
+  Competition _fromServer(ServerCompetition r) {
+    final existing = _competitions.where((c) => c.serverId == r.id).toList();
+    if (existing.isNotEmpty) return existing.first;
+    return Competition(
+      id: 'srv-${r.id}',
+      name: r.name,
+      date: DateTime(r.date.year, r.date.month, r.date.day),
+      distanceKm: r.distanceKm,
+      note: r.note,
+      synced: true,
+      finished: r.status == 'completed',
+      place: r.place,
+      totalParticipants: r.totalParticipants,
+      resultTimeSec: r.resultTimeSec,
+      serverId: r.id,
+    );
+  }
+
 
   int _notifBaseId(Competition c) {
     final num = int.tryParse(c.id) ?? c.id.hashCode;
@@ -514,7 +700,7 @@ class _PreparationTabState extends State<PreparationTab> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Удалить соревнование?'),
-        content: Text('"${comp.name}" будет удалено'),
+        content: Text('"${comp.name}" будет удалено и на других устройствах'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Удалить')),
@@ -523,14 +709,39 @@ class _PreparationTabState extends State<PreparationTab> {
     );
     if (confirm == true) {
       await _cancelStages(comp);
+      // Надгробие до удаления из списка — иначе pull вернёт запись
+      // до того, как сам DELETE дойдёт до сервера.
+      if (comp.serverId != null) {
+        _tombstones.add(comp.serverId!);
+        await _persistTombstones();
+      }
       setState(() {
         _competitions.removeWhere((c) => c.id == comp.id);
         _selectedId = _competitions.isNotEmpty ? _competitions.first.id : null;
         _aiAnalysis = null;
       });
+      if (comp.serverId != null) {
+        // Best-effort: не удалилось сейчас — надгробие удержит запись в
+        // тени до следующего успешного DELETE (204/404).
+        final deleted = await CompetitionsService.instance.deleteCompetition(comp.serverId!);
+        if (deleted) {
+          _tombstones.remove(comp.serverId);
+          await _persistTombstones();
+        }
+      }
       await _saveCompetitions();
       await _computeStats();
     }
+  }
+
+  Future<void> _persistTombstones() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+        _kTombstonesKey,
+        _tombstones.map((e) => e.toString()).toList(),
+      );
+    } catch (_) {}
   }
 
   @override
@@ -622,6 +833,11 @@ class _PreparationTabState extends State<PreparationTab> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text('Финиш', style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    if (!comp.synced)
+                      Tooltip(
+                        message: 'Ещё не отправлено на сервер — отправится при следующем синке',
+                        child: Icon(Icons.cloud_off, size: 18, color: theme.colorScheme.outline),
                       ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
