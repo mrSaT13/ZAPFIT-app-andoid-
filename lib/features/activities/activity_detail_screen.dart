@@ -25,6 +25,7 @@ import 'package:endurain/features/activities/similar_activities_screen.dart';
 import 'package:endurain/core/services/training_analysis_service.dart';
 import 'package:endurain/core/services/ollama_service.dart';
 import 'package:endurain/features/activities/widgets/activity_share_card.dart';
+import 'package:endurain/features/activities/widgets/activity_comments_section.dart';
 // === ZAPFIT metrics ===
 import 'package:endurain/core/utils/trimp_calculator.dart';
 import 'package:endurain/core/utils/pace_zones_calculator.dart';
@@ -989,6 +990,10 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
               const SizedBox(height: 20),
             ],
             _buildNotesCard(),
+            if (_activity.serverId != null) ...[
+              const SizedBox(height: 20),
+              ActivityCommentsSection(activity: _activity, isOwnActivity: widget.isOwnActivity),
+            ],
             // === ZAPFIT metrics ===
             const SizedBox(height: 20),
             _buildSportsMetricsCard(),
