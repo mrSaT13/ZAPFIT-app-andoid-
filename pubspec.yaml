@@ -1,4 +1,4 @@
-﻿name: endurain
+name: endurain
 description: "ZAPFIT tracking mobile app (fork of Endurain)."
 publish_to: 'none'
 
@@ -57,7 +57,10 @@ dependencies:
   flutter_tts: ^3.8.3
   web_socket_channel: ^3.0.3
   url_launcher: ^6.2.5
+  mobile_scanner: ^7.4.2
 
+  isar: any
+  injectable: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
