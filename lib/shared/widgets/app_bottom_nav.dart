@@ -5,6 +5,7 @@ import 'package:endurain/features/feed/feed_screen.dart';
 import 'package:endurain/features/activities/activity_hub_screen.dart';
 import 'package:endurain/features/settings/settings_screen.dart';
 import 'package:endurain/features/health/health_screen.dart';
+import 'package:endurain/features/workouts/workouts_screen.dart';
 import 'package:endurain/core/utils/platform_utils.dart';
 import 'package:endurain/core/constants/ui_constants.dart';
 import 'package:endurain/core/services/api_client.dart';
@@ -30,6 +31,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
   List<Widget> get _screens => [
     const FeedScreen(),
     const ActivityHubScreen(),
+    const WorkoutsScreen(),
     const HealthScreen(),
     SettingsScreen(onLogout: widget.onLogout),
   ];
@@ -110,6 +112,13 @@ class _AppBottomNavState extends State<AppBottomNav> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(top: UIConstants.paddingSmall),
+                child: Icon(CupertinoIcons.sportscourt),
+              ),
+              label: 'Тренировки',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(top: UIConstants.paddingSmall),
                 child: Icon(CupertinoIcons.heart),
               ),
               label: 'Здоровье',
@@ -128,7 +137,6 @@ class _AppBottomNavState extends State<AppBottomNav> {
         },
       );
     }
-
     return Scaffold(
       body: Column(
         children: [
@@ -178,6 +186,11 @@ class _AppBottomNavState extends State<AppBottomNav> {
             icon: Icon(Icons.directions_run_outlined),
             activeIcon: Icon(Icons.directions_run),
             label: 'Активность',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center_outlined),
+            activeIcon: Icon(Icons.fitness_center),
+            label: 'Тренировки',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),

@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/logo/logo.png
     - assets/sso/
+    - assets/catalog/exercise_catalog.json
 
 
 
