@@ -354,4 +354,37 @@ class NutritionLocalRepository {
       imageUrl: r['image_url'] as String?,
     );
   }
+
+  /// "My foods": latest log row per product name matching the query
+  /// (case-insensitive), most recently logged first.
+  ///
+  /// History-first autocomplete for repeat meals: the dialog offers these
+  /// instantly (no network) and a tap fills the whole form, so recurring
+  /// foods/drinks never need retyping.
+  Future<List<MealLog>> recentFoods(String query, {int limit = 6}) async {
+    try {
+      final db = await _database;
+      final q = query.trim();
+      if (q.length < 2) return [];
+      final rows = await db.query(
+        'meal_logs',
+        where: 'pending_delete = 0 AND product_name LIKE ?',
+        whereArgs: ['%$q%'],
+        orderBy: 'local_id DESC',
+        limit: limit * 4,
+      );
+      final seen = <String>{};
+      final out = <MealLog>[];
+      for (final r in rows.cast<Map<String, dynamic>>()) {
+        final key = (r['product_name'] as String? ?? '').toLowerCase();
+        if (key.isEmpty || !seen.add(key)) continue;
+        out.add(_logFromRow(r));
+        if (out.length >= limit) break;
+      }
+      return out;
+    } catch (e) {
+      debugPrint('NutritionLocal: recentFoods error: $e');
+      return [];
+    }
+  }
 }

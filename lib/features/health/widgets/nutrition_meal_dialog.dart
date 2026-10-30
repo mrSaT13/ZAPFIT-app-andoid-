@@ -60,7 +60,9 @@ class _NutritionMealDialogState extends State<NutritionMealDialog> {
   final TextEditingController _searchController = TextEditingController();
 
   Timer? _searchDebounce;
+  Timer? _historyDebounce;
   List<OffProduct> _searchResults = const [];
+  List<MealLog> _history = const [];
   bool _searching = false;
   String? _barcode;
 
@@ -107,6 +109,7 @@ class _NutritionMealDialogState extends State<NutritionMealDialog> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _historyDebounce?.cancel();
     _nameController.dispose();
     _caloriesController.dispose();
     _proteinController.dispose();
@@ -167,6 +170,37 @@ class _NutritionMealDialogState extends State<NutritionMealDialog> {
       const Duration(milliseconds: 500),
       () => _runSearch(query),
     );
+  }
+
+  /// History-first autocomplete: instant local lookup while typing.
+  void _scheduleHistory(String query) {
+    _historyDebounce?.cancel();
+    _historyDebounce = Timer(
+      const Duration(milliseconds: 300),
+      () => _runHistory(query),
+    );
+  }
+
+  Future<void> _runHistory(String query) async {
+    final results = await _service.recentFoods(query);
+    if (!mounted) return;
+    setState(() => _history = results);
+  }
+
+  /// Fills the whole form from a history row (repeat meal in one tap).
+  void _applyHistory(MealLog log) {
+    setState(() {
+      _product = null;
+      _barcode = log.offBarcode;
+      _nameController.text = log.productName;
+      _caloriesController.text = _num(log.calories);
+      _proteinController.text = _num(log.protein);
+      _carbsController.text = _num(log.carbs);
+      _fatController.text = _num(log.fat);
+      _portionController.text = _num(log.portionG);
+      _history = const [];
+      _searchResults = const [];
+    });
   }
 
   Future<void> _runSearch(String query) async {
@@ -291,8 +325,11 @@ class _NutritionMealDialogState extends State<NutritionMealDialog> {
                   labelText: 'Продукт *',
                   isDense: true,
                 ),
+                onChanged: _scheduleHistory,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
+              _buildHistoryList(theme),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
@@ -400,6 +437,67 @@ class _NutritionMealDialogState extends State<NutritionMealDialog> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// "My foods" suggestions: repeat meals from local history in one tap.
+  Widget _buildHistoryList(ThemeData theme) {
+    if (_history.isEmpty) return const SizedBox.shrink();
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 180),
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Text(
+                'Вы уже ели — тап для подстановки',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _history.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final log = _history[index];
+                  final kcal = log.calories;
+                  return ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.history, size: 20),
+                    title: Text(
+                      log.productName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      [
+                        if (log.portionG != null) '${_num(log.portionG)} г',
+                        if (kcal != null) '${_num(kcal)} ккал',
+                      ].join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () => _applyHistory(log),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -219,6 +219,10 @@ class NutritionService {
     );
   }
 
+  /// "My foods" history for autocomplete (local only, instant).
+  Future<List<MealLog>> recentFoods(String query) =>
+      _local.recentFoods(query);
+
   // ---- Open Food Facts (server proxy) ----
 
   Future<List<OffProduct>> searchOff(String query) async {
