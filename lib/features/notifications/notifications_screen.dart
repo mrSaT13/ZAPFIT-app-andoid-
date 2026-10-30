@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:endurain/core/models/notification_model.dart';
+import 'package:endurain/core/services/feed_service.dart';
 import 'package:endurain/core/services/notification_service.dart';
 import 'package:endurain/core/di/service_locator.dart';
+import 'package:endurain/features/activities/activity_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -140,6 +142,40 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   void _showNotificationDetail(BuildContext context, NotificationRecord n) {
     final navTarget = n.navigationTarget;
+    // Activity notifications (new activity / duplicate / comment) carry the
+    // server activity id — resolve it from the loaded feed cache so the
+    // detail screen opens directly. Falls back to a hint when the activity
+    // isn't in the cached pages (open the feed to load it).
+    VoidCallback? openTarget;
+    if (navTarget != null && navTarget['route'] == 'activity') {
+      final activityId = navTarget['params']?['id'];
+      openTarget = () {
+        try {
+          final feed = serviceLocator<FeedService>();
+          final all = [...feed.myFeed, ...feed.friendsFeed];
+          final match = all.where((a) => a.serverId == activityId).toList();
+          Navigator.pop(context); // close the dialog first
+          if (match.isNotEmpty) {
+            final isOwn = feed.myFeed.any((a) => a.serverId == activityId);
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => ActivityDetailScreen(
+                  activity: match.first,
+                  isOwnActivity: isOwn,
+                ),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Активность не в кэше — откройте ленту')),
+            );
+          }
+        } catch (_) {
+          Navigator.pop(context);
+        }
+      };
+    }
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -164,14 +200,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Закрыть')),
-          if (navTarget != null)
+          if (openTarget != null)
             FilledButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context); // close notifications screen
-                // Navigation will be handled by the parent navigator
-                // based on the target route
-              },
+              onPressed: openTarget,
               child: const Text('Открыть'),
             ),
         ],
