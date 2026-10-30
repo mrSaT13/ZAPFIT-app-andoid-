@@ -219,9 +219,50 @@ class NutritionService {
     );
   }
 
-  /// "My foods" history for autocomplete (local only, instant).
-  Future<List<MealLog>> recentFoods(String query) =>
-      _local.recentFoods(query);
+  /// "My foods" history for autocomplete.
+  ///
+  /// Server first (same list on every client — the server aggregates the
+  /// user's own logs), merged over the local log history so offline entries
+  /// and cross-device rows both show. Pure local fallback when offline.
+  Future<List<MealLog>> recentFoods(String query) async {
+    final q = query.trim();
+    if (q.length < 2) return [];
+    final local = await _local.recentFoods(q);
+    try {
+      final response = await _apiClient.get(
+        '$_basePath/favorites?query=${Uri.encodeQueryComponent(q)}&limit=8',
+      );
+      if (response.statusCode == 200) {
+        final remote = (json.decode(response.body) as List<dynamic>)
+            .whereType<Map<String, dynamic>>()
+            .map((e) => MealLog(
+                  date: e['last_logged'] as String? ?? '',
+                  mealType: 'snack',
+                  productName: e['product_name'] as String? ?? '',
+                  calories: (e['calories'] as num?)?.toDouble(),
+                  protein: (e['protein'] as num?)?.toDouble(),
+                  carbs: (e['carbs'] as num?)?.toDouble(),
+                  fat: (e['fat'] as num?)?.toDouble(),
+                  portionG: (e['portion_g'] as num?)?.toDouble(),
+                  offBarcode: e['off_barcode'] as String?,
+                ),)
+            .where((m) => m.productName.isNotEmpty)
+            .toList();
+        if (remote.isEmpty) return local;
+        // Server first (cross-device truth), then local-only rows.
+        final seen = <String>{};
+        final merged = <MealLog>[];
+        for (final m in [...remote, ...local]) {
+          if (seen.add(m.productName.toLowerCase())) merged.add(m);
+        }
+        return merged.take(8).toList();
+      }
+      debugPrint('NutritionService: favorites status ${response.statusCode}');
+    } catch (e) {
+      debugPrint('NutritionService: favorites offline, local only: $e');
+    }
+    return local;
+  }
 
   // ---- Open Food Facts (server proxy) ----
 

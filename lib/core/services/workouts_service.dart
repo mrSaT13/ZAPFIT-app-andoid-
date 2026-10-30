@@ -152,6 +152,32 @@ class WorkoutsService {
     return pending.length;
   }
 
+  /// On-demand RU translation of one catalog exercise
+  /// (`POST /workouts/exercises/{id}/translate`). Stateless: nothing is
+  /// stored server-side. Returns (description, tip) or null when the AI
+  /// provider is not configured / unreachable.
+  Future<({String description, String? tip})?> translateExercise(int wgerId) async {
+    try {
+      final response = await _apiClient.post(
+        '$_basePath/exercises/$wgerId/translate',
+        body: {'language': 'ru'},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return (
+          description: data['description'] as String? ?? '',
+          tip: (data['tip'] as String?)?.isNotEmpty == true
+              ? data['tip'] as String
+              : null,
+        );
+      }
+      debugPrint('WorkoutsService: translate status ${response.statusCode}');
+    } catch (e) {
+      debugPrint('WorkoutsService: translate error: $e');
+    }
+    return null;
+  }
+
   /// Pushes unsynced local sessions; returns how many were confirmed.
   Future<int> syncPending() async {
     final pending = await _local.pendingSessions();
