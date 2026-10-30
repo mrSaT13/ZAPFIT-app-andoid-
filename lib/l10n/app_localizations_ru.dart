@@ -592,6 +592,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get healthSteps => 'Шаги';
 
   @override
+  String get healthNutrition => 'Питание';
+
+  @override
   String get todaySummary => 'Сводка за сегодня';
 
   @override

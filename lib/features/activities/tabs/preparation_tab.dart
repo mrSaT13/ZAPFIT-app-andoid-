@@ -141,7 +141,10 @@ class _PreparationTabState extends State<PreparationTab> {
       final tombstones = prefs.getStringList(_kTombstonesKey) ?? const [];
       _tombstones
         ..clear()
-        ..addAll(tombstones.map(int.parse).whereType<int>());
+        ..addAll([
+          for (final s in tombstones)
+            int.tryParse(s),
+        ].whereType<int>());
       final list = <Competition>[];      if (raw != null && raw.isNotEmpty) {
         final decoded = json.decode(raw) as List;
         for (final e in decoded) {
@@ -198,6 +201,7 @@ class _PreparationTabState extends State<PreparationTab> {
       final svc = CompetitionsService.instance;
 
       // 1) Push несинхронизированных.
+      String? pushError;
       for (var i = _competitions.length - 1; i >= 0; i--) {
         final c = _competitions[i];
         if (c.synced) continue;
@@ -215,6 +219,8 @@ class _PreparationTabState extends State<PreparationTab> {
           );
           if (ok && mounted) {
             setState(() => _competitions[i] = c.copyWith(synced: true));
+          } else if (svc.lastError != null) {
+            pushError = svc.lastError;
           }
         } else {
           final serverId = await svc.createCompetition(
@@ -229,6 +235,8 @@ class _PreparationTabState extends State<PreparationTab> {
           );
           if (serverId != null && mounted) {
             setState(() => _competitions[i] = c.copyWith(synced: true, serverId: serverId));
+          } else if (svc.lastError != null) {
+            pushError = svc.lastError;
           }
         }
       }
@@ -236,6 +244,25 @@ class _PreparationTabState extends State<PreparationTab> {
       // 2) Pull серверных строк (надгробия от локальных удалений пропускаем,
       // чтобы удалённая запись не «рассосалась» обратно после offline-удаления.
       final remote = await svc.fetchCompetitions();
+      if (remote == null) {
+        // Ошибка сети/сервера — pull и чистку пропускаем, push уже сделан.
+        // Иначе пустой список при обрыве стирал бы синкнутое локально.
+        if (mounted && _competitions.any((c) => !c.synced)) {
+          final err = pushError ?? svc.lastError;
+          if (err != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$err — попробуем при следующем синке')),
+            );
+          }
+        }
+        return;
+      }
+      // Push отклонили валидацией, а pull успешен — показываем причину.
+      if (pushError != null && mounted && _competitions.any((c) => !c.synced)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(pushError!)),
+        );
+      }
       for (final r in remote) {
         if (_tombstones.contains(r.id)) continue;
         final i = _competitions.indexWhere(
@@ -466,11 +493,50 @@ class _PreparationTabState extends State<PreparationTab> {
       ),
     );
     if (result != true) return;
+    // Место/участники: пусто = не указываем; иначе только >= 1,
+    // иначе сервер 422 и запись вечно висит в cloud_off.
+    int? place;
+    int? total;
+    final placeRaw = placeCtrl.text.trim();
+    final totalRaw = totalCtrl.text.trim();
+    if (placeRaw.isNotEmpty) {
+      place = int.tryParse(placeRaw);
+      if (place == null || place < 1) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Место: целое число от 1')),
+          );
+        }
+        return;
+      }
+    }
+    if (totalRaw.isNotEmpty) {
+      total = int.tryParse(totalRaw);
+      if (total == null || total < 1) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Участники: целое число от 1')),
+          );
+        }
+        return;
+      }
+    }
     int? secs;
-    final parts = timeCtrl.text.trim().split(':').map((p) => int.tryParse(p) ?? -1).toList();
-    if (!parts.any((p) => p < 0)) {
-      if (parts.length == 2) secs = parts[0] * 60 + parts[1];
-      if (parts.length == 3) secs = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    final timeRaw = timeCtrl.text.trim();
+    if (timeRaw.isNotEmpty) {
+      final parts = timeRaw.split(':').map((p) => int.tryParse(p) ?? -1).toList();
+      if (!parts.any((p) => p < 0)) {
+        if (parts.length == 2) secs = parts[0] * 60 + parts[1];
+        if (parts.length == 3) secs = parts[0] * 3600 + parts[1] * 60 + parts[2];
+      }
+      if (secs == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Время: ММ:СС или Ч:ММ:СС')),
+          );
+        }
+        return;
+      }
     }
     await _cancelStages(comp);
     setState(() {
@@ -478,8 +544,8 @@ class _PreparationTabState extends State<PreparationTab> {
       if (i >= 0) {
         _competitions[i] = comp.copyWith(
           finished: true,
-          place: int.tryParse(placeCtrl.text.trim()),
-          totalParticipants: int.tryParse(totalCtrl.text.trim()),
+          place: place,
+          totalParticipants: total,
           resultTimeSec: secs,
           notifIds: const [],
         );
@@ -664,11 +730,28 @@ class _PreparationTabState extends State<PreparationTab> {
       ),
     );
 
-    if (result == true && nameCtrl.text.trim().isNotEmpty) {
-      final dist = double.tryParse(distCtrl.text.replaceAll(',', '.')) ?? 10.0;
+    if (result == true) {
+      final cleanName = nameCtrl.text.trim();
+      if (cleanName.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Введите название старта')),
+          );
+        }
+        return;
+      }
+      final dist = double.tryParse(distCtrl.text.replaceAll(',', '.').trim());
+      if (dist == null || !(dist > 0) || dist > 1000) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Дистанция: число от 0.1 до 1000 км')),
+          );
+        }
+        return;
+      }
       var comp = Competition(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: nameCtrl.text.trim(),
+        name: cleanName,
         date: date,
         distanceKm: dist,
         note: noteCtrl.text.trim().isEmpty ? null : noteCtrl.text.trim(),

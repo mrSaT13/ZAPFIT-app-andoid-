@@ -10,6 +10,7 @@ import 'package:endurain/core/services/local_activity_repository.dart';
 import 'package:endurain/core/di/service_locator.dart';
 import 'package:endurain/core/models/activity_models.dart';
 import 'package:endurain/features/activities/activity_detail_screen.dart';
+import 'package:endurain/features/activities/widgets/activity_comments_section.dart';
 import 'package:endurain/features/feed/user_profile_screen.dart';
 import 'package:endurain/features/notifications/notifications_screen.dart';
 import 'package:endurain/features/people/people_search_screen.dart';
@@ -355,13 +356,22 @@ class _OfflineBanner extends StatelessWidget {
   }
 }
 
-class _ActivityFeedCard extends StatelessWidget {
+class _ActivityFeedCard extends StatefulWidget {
   final ActivityRecord activity;
   final bool isOwnFeed;
   const _ActivityFeedCard({required this.activity, this.isOwnFeed = true});
 
   @override
+  State<_ActivityFeedCard> createState() => _ActivityFeedCardState();
+}
+
+class _ActivityFeedCardState extends State<_ActivityFeedCard> {
+  bool _commentsOpen = false;
+
+  @override
   Widget build(BuildContext context) {
+    final activity = widget.activity;
+    final isOwnFeed = widget.isOwnFeed;
     final theme = Theme.of(context);
     final distanceKm = (activity.distanceMeters / 1000).toStringAsFixed(2);
     final duration = Duration(seconds: activity.durationSeconds);
@@ -445,7 +455,7 @@ class _ActivityFeedCard extends StatelessWidget {
                 fallbackIcon: _getIconForKind(activity.kind),
               ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -456,6 +466,30 @@ class _ActivityFeedCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Комменты как в вебе: прямо в ленте, свернуты по умолчанию.
+            // Для локальных (serverId == null) скрыто — комменты живут на сервере.
+            if (activity.serverId != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => setState(() => _commentsOpen = !_commentsOpen),
+                      icon: Icon(
+                        _commentsOpen ? Icons.expand_less : Icons.forum_outlined,
+                        size: 18,
+                      ),
+                      label: Text(_commentsOpen ? 'Скрыть комментарии' : 'Комментарии'),
+                    ),
+                    if (_commentsOpen)
+                      ActivityCommentsSection(
+                        activity: activity,
+                        isOwnActivity: isOwnFeed,
+                      ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

@@ -1252,6 +1252,12 @@ abstract class AppLocalizations {
   /// **'Steps'**
   String get healthSteps;
 
+  /// No description provided for @healthNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition'**
+  String get healthNutrition;
+
   /// No description provided for @todaySummary.
   ///
   /// In en, this message translates to:

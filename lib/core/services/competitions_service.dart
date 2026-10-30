@@ -62,11 +62,16 @@ class CompetitionsService {
   static const String _upcomingKey = 'upcoming';
   static const String _completedKey = 'completed';
 
+  /// Последняя ошибка push/pull для показа в UI (SnackBar).
+  /// Сбрасывается в начале каждого вызова.
+  String? lastError;
+
   /// Whether the app runs with a server configured (local mode skips sync).
   Future<bool> get isServerMode async =>
       await ModeSelectionScreen.getMode() == AppMode.server;
 
-  Future<List<ServerCompetition>> fetchCompetitions() async {
+  Future<List<ServerCompetition>?> fetchCompetitions() async {
+    lastError = null;
     try {
       final response = await _apiClient.get(_basePath);
       if (response.statusCode == 200) {
@@ -75,10 +80,15 @@ class CompetitionsService {
             .map((e) => ServerCompetition.fromJson(e as Map<String, dynamic>))
             .toList();
       }
+      lastError = 'Загрузка стартов: ${response.statusCode}';
+      debugPrint('CompetitionsService: fetchCompetitions status ${response.statusCode}');
     } catch (e) {
+      lastError = 'Нет связи с сервером';
       debugPrint('CompetitionsService: fetchCompetitions error: $e');
     }
-    return [];
+    // null = ошибка сети/сервера (не пустой список!) — таб не должен
+    // считать синкнутые записи удалёнными на другом устройстве.
+    return null;
   }
 
   /// Creates the server record; returns its id, or null on failure (the tab
@@ -93,11 +103,17 @@ class CompetitionsService {
     int? totalParticipants,
     int? resultTimeSec,
   }) async {
+    lastError = null;
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) {
+      lastError = 'Название старта пустое';
+      return null;
+    }
     try {
       final response = await _apiClient.post(
         _basePath,
         body: _payload(
-          name: name,
+          name: cleanName,
           date: date,
           distanceKm: distanceKm,
           note: note,
@@ -110,8 +126,10 @@ class CompetitionsService {
       if (response.statusCode == 201) {
         return (json.decode(response.body)['id'] as num).toInt();
       }
-      debugPrint('CompetitionsService: createCompetition status ${response.statusCode}');
+      lastError = _shortError('Создание отклонено (${response.statusCode})', response.body);
+      debugPrint('CompetitionsService: createCompetition status ${response.statusCode} body ${response.body}');
     } catch (e) {
+      lastError = 'Нет связи с сервером — отправится позже';
       debugPrint('CompetitionsService: createCompetition error: $e');
     }
     return null;
@@ -129,6 +147,7 @@ class CompetitionsService {
     int? totalParticipants,
     int? resultTimeSec,
   }) async {
+    lastError = null;
     try {
       final response = await _apiClient.put(
         '$_basePath/$serverId',
@@ -143,8 +162,11 @@ class CompetitionsService {
           resultTimeSec: resultTimeSec,
         ),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return true;
+      lastError = _shortError('Обновление отклонено (${response.statusCode})', response.body);
+      return false;
     } catch (e) {
+      lastError = 'Нет связи с сервером — отправится позже';
       debugPrint('CompetitionsService: updateCompetition error: $e');
       return false;
     }
@@ -172,16 +194,38 @@ class CompetitionsService {
     int? totalParticipants,
     int? resultTimeSec,
   }) {
+    // Сервер: distance_km gt=0 le=1000, place/total ge=1, name 1..100.
+    // Невалидное чиним здесь вместо молчаливого 422 + вечного cloud_off.
+    var dist = distanceKm.isFinite ? distanceKm : 10.0;
+    dist = dist.clamp(0.1, 1000.0);
+    final cleanName = name.trim().isEmpty ? 'Старт' : name.trim();
     final result = <String, dynamic>{
-      'name': name.length > 100 ? name.substring(0, 100) : name,
+      'name': cleanName.length > 100 ? cleanName.substring(0, 100) : cleanName,
       _dateKey: '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-      'distance_km': distanceKm,
+      'distance_km': dist,
       'note': (note != null && note.isNotEmpty) ? (note.length > 500 ? note.substring(0, 500) : note) : null,
       'status': finished ? _completedKey : _upcomingKey,
     };
-    if (place != null) result['place'] = place;
-    if (totalParticipants != null) result['total_participants'] = totalParticipants;
-    if (resultTimeSec != null) result['result_time_s'] = resultTimeSec;
+    if (place != null && place >= 1) result['place'] = place;
+    if (totalParticipants != null && totalParticipants >= 1) {
+      result['total_participants'] = totalParticipants;
+    }
+    if (resultTimeSec != null && resultTimeSec >= 0) result['result_time_s'] = resultTimeSec;
     return result;
+  }
+
+  String _shortError(String prefix, String body) {
+    var msg = body.trim();
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map && decoded['detail'] is List && (decoded['detail'] as List).isNotEmpty) {
+        final first = (decoded['detail'] as List).first;
+        if (first is Map && first['msg'] is String) msg = first['msg'] as String;
+      } else if (decoded is Map && decoded['detail'] is String) {
+        msg = decoded['detail'] as String;
+      }
+    } catch (_) {}
+    if (msg.length > 140) msg = '${msg.substring(0, 140)}…';
+    return msg.isEmpty ? prefix : '$prefix: $msg';
   }
 }

@@ -592,6 +592,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get healthSteps => 'Steps';
 
   @override
+  String get healthNutrition => 'Nutrition';
+
+  @override
   String get todaySummary => 'Today\'s summary';
 
   @override

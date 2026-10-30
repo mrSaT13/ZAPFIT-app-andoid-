@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:endurain/core/services/catalog_service.dart';
+import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/workouts_service.dart';
 import 'package:endurain/features/workouts/log_session_screen.dart';
@@ -18,6 +19,7 @@ class WorkoutsScreen extends StatefulWidget {
 class _WorkoutsScreenState extends State<WorkoutsScreen>
     with SingleTickerProviderStateMixin {
   final WorkoutsService _service = WorkoutsService.instance;
+  final WorkoutsLocalRepository _local = WorkoutsLocalRepository.instance;
   final CatalogService _catalog = CatalogService.instance;
 
   late final TabController _tabs = TabController(length: 2, vsync: this);
@@ -45,19 +47,48 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
   }
 
   Future<void> _reload() async {
-    setState(() => _loading = true);
-    await _catalog.ensureLoaded();
-    if (!mounted) return;
-    setState(() => _catalogLoading = false);
-    await _refreshData();
+    // 1) Cache-first: мгновенный рендер последнего известного без сети,
+    // чтобы офлайн можно было заниматься (каталог 914 уже вшит в APK).
+    try {
+      final cachedPlans = await _local.listPlans();
+      final cachedSessions = await _local.listSessions();
+      final pending = await _service.pendingCount();
+      if (!mounted) return;
+      setState(() {
+        _plans = cachedPlans;
+        _sessions = cachedSessions;
+        _pendingCount = pending;
+        // Скелетон только если кэш пуст; иначе сразу показываем данные.
+        _loading = cachedPlans.isEmpty && cachedSessions.isEmpty;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = true);
+    }
+    // 2) Каталог + сеть параллельно в фоне (не блокируют друг друга).
+    await Future.wait([
+      _catalog.ensureLoaded().then((_) {
+        if (mounted) setState(() => _catalogLoading = false);
+      }),
+      _refreshData(),
+    ]);
+    if (mounted) setState(() => _catalogLoading = false);
   }
 
   Future<void> _refreshData() async {
     if (!mounted) return;
-    _plans = await _service.fetchPlans();
-    _sessions = await _service.fetchSessions();
-    _pendingCount = await _service.pendingCount();
-    if (mounted) setState(() => _loading = false);
+    // Параллельно: планы + сессии + счётчик очереди.
+    final results = await Future.wait([
+      _service.fetchPlans(),
+      _service.fetchSessions(),
+      _service.pendingCount(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _plans = results[0] as List<WorkoutPlan>;
+      _sessions = results[1] as List<WorkoutSession>;
+      _pendingCount = results[2] as int;
+      _loading = false;
+    });
   }
 
   Future<void> _createPlan() async {
@@ -91,7 +122,15 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
   }
 
   Future<void> _logSession(WorkoutPlan plan) async {
-    if (_catalogLoading) return;
+    if (_catalogLoading && !_catalog.isReady) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Каталог ещё грузится — секунда…')),
+      );
+      await _catalog.ensureLoaded();
+      if (!mounted) return;
+      setState(() => _catalogLoading = false);
+    }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => LogSessionScreen(plan: plan)),
     );
@@ -129,7 +168,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
         onPressed: _tabs.index == 0 ? _createPlan : null,
         child: const Icon(Icons.add),
       ),
-      body: _catalogLoading
+      body: (_catalogLoading && _loading && _plans.isEmpty)
           ? const Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

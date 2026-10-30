@@ -201,6 +201,7 @@
   "healthSleep": "Sleep",
   "healthWater": "Water",
   "healthSteps": "Steps",
+  "healthNutrition": "Nutrition",
   "todaySummary": "Today's summary",
   "noData": "No data",
   "quality": "Quality",

@@ -13,6 +13,7 @@ import 'package:endurain/features/health/tabs/sleep_tab.dart';
 import 'package:endurain/features/health/tabs/water_tab.dart';
 import 'package:endurain/features/health/tabs/steps_tab.dart';
 import 'package:endurain/features/health/tabs/heart_rate_tab.dart';
+import 'package:endurain/features/health/tabs/nutrition_tab.dart';
 import 'package:endurain/features/devices/devices_screen.dart';
 import 'package:endurain/l10n/app_localizations.dart';
 
@@ -32,7 +33,7 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
@@ -109,9 +110,9 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
           ],
           bottom: TabBar(
             controller: _tabController,
-            isScrollable: false,
+            isScrollable: true,
             indicatorSize: TabBarIndicatorSize.label,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
             labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
             unselectedLabelStyle: const TextStyle(fontSize: 11),
             tabs: [
@@ -121,6 +122,7 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
               Tab(text: l10n.healthWater, icon: Icon(Icons.water_drop_outlined, size: 18)),
               Tab(text: l10n.healthSteps, icon: Icon(Icons.directions_walk, size: 18)),
               Tab(text: l10n.healthHeartRate, icon: Icon(Icons.favorite, size: 18)),
+              Tab(text: l10n.healthNutrition, icon: Icon(Icons.restaurant_outlined, size: 18)),
             ],
           ),
         ),
@@ -161,6 +163,7 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
                   const WaterTab(),
                   const StepsTab(),
                   const HeartRateTab(),
+                  const NutritionTab(),
                 ],
               ),
             ),

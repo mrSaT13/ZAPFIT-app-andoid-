@@ -593,6 +593,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get healthSteps => 'Passos';
 
   @override
+  String get healthNutrition => 'Nutrição';
+
+  @override
   String get todaySummary => 'Resumo de hoje';
 
   @override
