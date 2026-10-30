@@ -7,6 +7,7 @@ import 'package:endurain/core/services/connectivity_service.dart';
 import 'package:endurain/core/services/activity_sync_service.dart';
 import 'package:endurain/core/services/user_service.dart';
 import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/activity_comments_service.dart';
 import 'package:endurain/core/di/service_locator.dart';
 import 'package:endurain/core/models/activity_models.dart';
 import 'package:endurain/features/activities/activity_detail_screen.dart';
@@ -367,6 +368,29 @@ class _ActivityFeedCard extends StatefulWidget {
 
 class _ActivityFeedCardState extends State<_ActivityFeedCard> {
   bool _commentsOpen = false;
+  int _commentCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCommentCount();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ActivityFeedCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.activity.serverId != widget.activity.serverId) {
+      _loadCommentCount();
+    }
+  }
+
+  Future<void> _loadCommentCount() async {
+    final serverId = widget.activity.serverId;
+    if (serverId == null) return;
+    final count =
+        await ActivityCommentsService.instance.fetchCommentCount(serverId);
+    if (mounted) setState(() => _commentCount = count);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -475,12 +499,22 @@ class _ActivityFeedCardState extends State<_ActivityFeedCard> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextButton.icon(
-                      onPressed: () => setState(() => _commentsOpen = !_commentsOpen),
+                      onPressed: () {
+                        setState(() => _commentsOpen = !_commentsOpen);
+                        // После сворачивания обновляем бейдж (там могли добавить).
+                        if (_commentsOpen) _loadCommentCount();
+                      },
                       icon: Icon(
                         _commentsOpen ? Icons.expand_less : Icons.forum_outlined,
                         size: 18,
                       ),
-                      label: Text(_commentsOpen ? 'Скрыть комментарии' : 'Комментарии'),
+                      label: Text(
+                        _commentCount > 0
+                            ? (_commentsOpen
+                                ? 'Скрыть комментарии ($_commentCount)'
+                                : 'Комментарии ($_commentCount)')
+                            : (_commentsOpen ? 'Скрыть комментарии' : 'Комментарии'),
+                      ),
                     ),
                     if (_commentsOpen)
                       ActivityCommentsSection(

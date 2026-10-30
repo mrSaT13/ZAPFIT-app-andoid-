@@ -27,13 +27,15 @@ class NotificationRecord {
   }
 
   /// Notification type labels matching server constants:
-  /// 1=NEW_ACTIVITY, 2=DUPLICATE_ACTIVITY, 11=NEW_FOLLOWER_REQUEST,
+  /// 1=NEW_ACTIVITY, 2=DUPLICATE_ACTIVITY, 3=NEW_COMMENT,
+  /// 11=NEW_FOLLOWER_REQUEST,
   /// 12=NEW_FOLLOWER_REQUEST_ACCEPTED, 21=GARMIN_TOKEN_EXPIRED,
   /// 101=ADMIN_NEW_SIGN_UP_APPROVAL_REQUEST
   String get title {
     switch (type) {
       case 1: return 'Новая активность';
       case 2: return 'Дубликат активности';
+      case 3: return 'Новый комментарий';
       case 11: return 'Запрос на подписку';
       case 12: return 'Подписка принята';
       case 21: return 'Токен Garmin истёк';
@@ -48,6 +50,8 @@ class NotificationRecord {
         return 'Новая тренировка добавлена в ленту';
       case 2:
         return 'Обнаружен дубликат тренировки по времени начала';
+      case 3:
+        return 'К вашей активности оставили комментарий';
       case 11: {
         final userName = options?['user_name'] as String? ?? 'Пользователь';
         final userUsername = options?['user_username'] as String?;
@@ -79,6 +83,7 @@ class NotificationRecord {
     switch (type) {
       case 1:
       case 2:
+      case 3:
         final activityId = options?['activity_id'];
         if (activityId != null) {
           return {'route': 'activity', 'params': {'id': activityId}};

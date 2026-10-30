@@ -183,6 +183,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (type) {
       case 1: return Icons.fitness_center;
       case 2: return Icons.content_copy;
+      case 3: return Icons.forum_outlined;
       case 11: return Icons.person_add;
       case 12: return Icons.how_to_reg;
       case 21: return Icons.watch_off;
@@ -195,6 +196,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (type) {
       case 1: return Colors.green;
       case 2: return Colors.orange;
+      case 3: return Colors.blue;
       case 11: return Colors.blue;
       case 12: return Colors.teal;
       case 21: return Colors.redAccent;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:endurain/core/models/catalog_models.dart';
 import 'package:endurain/core/services/catalog_service.dart';
+import 'package:endurain/features/workouts/widgets/exercise_info_dialog.dart';
 
 /// Exercise picker over the bundled offline catalog (914 entries, instant).
 ///
@@ -82,7 +83,11 @@ class _ExercisePickerDialogState extends State<ExercisePickerDialog> {
                     decoration: const InputDecoration(labelText: 'Категория', border: OutlineInputBorder(), isDense: true),
                     items: [
                       const DropdownMenuItem<int>(child: Text('Все категории')),
-                      for (final c in categories) DropdownMenuItem<int>(value: c.id, child: Text(c.name)),
+                      for (final c in categories)
+                        DropdownMenuItem<int>(
+                          value: c.id,
+                          child: Text(_catalog.categoryName(c.id)),
+                        ),
                     ],
                     onChanged: (v) {
                       setState(() => _categoryId = v);
@@ -98,7 +103,11 @@ class _ExercisePickerDialogState extends State<ExercisePickerDialog> {
                     decoration: const InputDecoration(labelText: 'Снаряд', border: OutlineInputBorder(), isDense: true),
                     items: [
                       const DropdownMenuItem<int>(child: Text('Любое снаряжение')),
-                      for (final e in equipment) DropdownMenuItem<int>(value: e.id, child: Text(e.name)),
+                      for (final e in equipment)
+                        DropdownMenuItem<int>(
+                          value: e.id,
+                          child: Text(_catalog.equipmentName(e.id)),
+                        ),
                     ],
                     onChanged: (v) {
                       setState(() => _equipmentId = v);
@@ -125,9 +134,8 @@ class _ExercisePickerDialogState extends State<ExercisePickerDialog> {
                           itemBuilder: (ctx, i) {
                             final ex = _results[i];
                             final muscles = [
-                              for (final id in ex.muscleIds.take(3))
-                                _catalog.muscles?.where((m) => m.id == id).first.name,
-                            ].whereType<String>().join(', ');
+                              for (final id in ex.muscleIds.take(3)) _catalog.muscleName(id),
+                            ].where((s) => s.isNotEmpty).join(', ');
                             return ListTile(
                               dense: true,
                               leading: Icon(
@@ -138,12 +146,17 @@ class _ExercisePickerDialogState extends State<ExercisePickerDialog> {
                               title: Text(ex.name(RussianOrEnglish.ru), maxLines: 1, overflow: TextOverflow.ellipsis),
                               subtitle: Text(
                                 [
-                                  _catalog.categoryById(ex.categoryId)?.name,
+                                  _catalog.categoryName(ex.categoryId),
                                   if (muscles.isNotEmpty) muscles,
-                                ].whereType<String>().join(' · '),
+                                ].where((s) => s.isNotEmpty).join(' · '),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall,
+                              ),
+                              trailing: IconButton(
+                                tooltip: 'Как выполнять',
+                                icon: const Icon(Icons.info_outline, size: 20),
+                                onPressed: () => showExerciseInfoDialog(context, ex),
                               ),
                               onTap: () => Navigator.pop(context, ex),
                             );

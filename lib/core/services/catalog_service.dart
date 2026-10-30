@@ -89,6 +89,84 @@ class CatalogService {
 
   CatalogDictionary? equipmentById(int id) => _lookup(_equipment, id);
 
+  /// Russian display names for the bundled dictionaries (the JSON carries
+  /// English canonical names; the server translates them via workouts.json —
+  /// mirror that here so the picker isn't half-English).
+  static const Map<int, String> _categoryNamesRu = {
+    8: 'Руки',
+    9: 'Ноги',
+    10: 'Пресс',
+    11: 'Грудь',
+    12: 'Спина',
+    13: 'Плечи',
+    14: 'Икры',
+    15: 'Кардио',
+  };
+
+  static const Map<int, String> _equipmentNamesRu = {
+    1: 'Штанга',
+    2: 'Штанга SZ',
+    3: 'Гантели',
+    4: 'Коврик',
+    5: 'Фитбол',
+    6: 'Турник',
+    7: 'Собственный вес',
+    8: 'Скамья',
+    9: 'Наклонная скамья',
+    10: 'Гиря',
+    11: 'Резиновый жгут',
+    12: 'Блочная рама',
+    13: 'Тренажёр',
+    14: 'Мяч',
+    15: 'Фоам-ролл',
+    16: 'Другое',
+  };
+
+  static const Map<int, String> _muscleNamesRu = {
+    1: 'Бицепс',
+    2: 'Передняя дельта',
+    3: 'Передняя зубчатая мышца',
+    4: 'Грудные',
+    5: 'Трицепс',
+    6: 'Прямая мышца живота',
+    7: 'Икроножная мышца',
+    8: 'Большая ягодичная',
+    9: 'Трапеция',
+    10: 'Квадрицепс',
+    11: 'Бицепс бедра',
+    12: 'Широчайшие',
+    13: 'Плечевая мышца',
+    14: 'Косые мышцы живота',
+    15: 'Камбаловидная мышца',
+    16: 'Разгибатель позвоночника',
+    17: 'Приводящие мышцы',
+    18: 'Отводящие мышцы',
+    19: 'Предплечья',
+  };
+
+  String categoryName(int id, {RussianOrEnglish lang = RussianOrEnglish.ru}) {
+    if (lang == RussianOrEnglish.ru) return _categoryNamesRu[id] ?? categoryById(id)?.name ?? '';
+    return categoryById(id)?.name ?? '';
+  }
+
+  String equipmentName(int id, {RussianOrEnglish lang = RussianOrEnglish.ru}) {
+    if (lang == RussianOrEnglish.ru) return _equipmentNamesRu[id] ?? equipmentById(id)?.name ?? '';
+    return equipmentById(id)?.name ?? '';
+  }
+
+  String muscleName(int id, {RussianOrEnglish lang = RussianOrEnglish.ru}) {
+    if (lang == RussianOrEnglish.ru) {
+      final ru = _muscleNamesRu[id];
+      if (ru != null) return ru;
+    }
+    final all = _muscles;
+    if (all == null) return '';
+    for (final m in all) {
+      if (m.id == id) return m.name;
+    }
+    return '';
+  }
+
   CatalogExercise? byId(int id) {
     final list = _exercises;
     if (list == null) return null;

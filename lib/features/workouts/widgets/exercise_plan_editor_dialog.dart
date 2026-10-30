@@ -4,6 +4,7 @@ import 'package:endurain/core/models/catalog_models.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/catalog_service.dart';
 import 'package:endurain/core/services/workouts_service.dart';
+import 'package:endurain/features/workouts/widgets/exercise_info_dialog.dart';
 import 'package:endurain/features/workouts/widgets/exercise_picker_dialog.dart';
 
 /// Plan editor (create/edit): name, description and exercise prescriptions.
@@ -40,6 +41,7 @@ class _PlanEditorDialog extends StatefulWidget {
 
 class _PlanEditorDialogState extends State<_PlanEditorDialog> {
   final WorkoutsService _service = WorkoutsService.instance;
+  final CatalogService _catalog = CatalogService.instance;
 
   late final TextEditingController _name;
   late final TextEditingController _description;
@@ -187,6 +189,8 @@ class _PlanEditorDialogState extends State<_PlanEditorDialog> {
                       itemCount: _rows.length,
                       itemBuilder: (ctx, i) {
                         final row = _rows[i];
+                        final catalogEx =
+                            row.wgerId != null ? _catalog.byId(row.wgerId!) : null;
                         return Card(
                           elevation: 0,
                           margin: const EdgeInsets.symmetric(vertical: 4),
@@ -204,13 +208,24 @@ class _PlanEditorDialogState extends State<_PlanEditorDialog> {
                                     Expanded(
                                       child: Text(
                                         '${i + 1}. ${row.name}',
-                                        style: theme.textTheme.titleSmall,
-                                        maxLines: 1,
+                                        style: theme.textTheme.titleSmall?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
+                                    if (catalogEx != null)
+                                      IconButton(
+                                        tooltip: 'Как выполнять',
+                                        visualDensity: VisualDensity.compact,
+                                        icon: const Icon(Icons.info_outline, size: 18),
+                                        onPressed: () =>
+                                            showExerciseInfoDialog(context, catalogEx),
+                                      ),
                                     _reorderButtons(i),
                                     IconButton(
+                                      tooltip: 'Удалить',
                                       icon: const Icon(Icons.delete_outline, size: 18),
                                       onPressed: () => setState(() => _rows.removeAt(i)),
                                     ),

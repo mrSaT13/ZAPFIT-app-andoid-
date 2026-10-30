@@ -77,6 +77,21 @@ class ActivityCommentsService {
     return [];
   }
 
+  /// Cheap COUNT(*) for the feed badge. Returns 0 on any failure so the
+  /// toggle simply hides the number (same as the web client).
+  Future<int> fetchCommentCount(int activityId) async {
+    try {
+      final response = await _apiClient.get('$_basePath/activity_id/$activityId/count');
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body) as Map<String, dynamic>;
+        return (decoded['count'] as num?)?.toInt() ?? 0;
+      }
+    } catch (e) {
+      debugPrint('CommentsService: count error: $e');
+    }
+    return 0;
+  }
+
   /// Adds a comment; returns the created record or null on failure.
   Future<ActivityCommentRecord?> createComment(int activityId, String content) async {
     return _postComment('$_basePath/activity_id/$activityId', content);
