@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import 'package:endurain/core/di/service_locator.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/secure_storage_service.dart';
 import 'package:endurain/core/utils/url_utils.dart';
@@ -52,7 +51,7 @@ class ExerciseMediaService {
 
   Future<File?> _downloadImpl(int wgerId) async {
     try {
-      final serverUrl = await serviceLocator<SecureStorageService>().getServerUrl();
+      final serverUrl = await SecureStorageService().getServerUrl();
       if (serverUrl == null) return null;
       final base = UrlUtils.normalizeBaseUrl(serverUrl);
       final url = '$base$_basePath/$wgerId.gif';
