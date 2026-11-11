@@ -254,6 +254,7 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
     final isToday = today.year == _month.year &&
         today.month == _month.month &&
         today.day == day;
+    final isSelected = _selectedDay == iso;
     final scheduled =
         _schedule.any((e) => e['date'] == iso);
     final done = _sessionDates.contains(iso);
@@ -266,12 +267,17 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
           onTap: () => _selectDay(iso),
           child: Container(
             decoration: BoxDecoration(
-              color: scheduled
-                  ? theme.colorScheme.primaryContainer.withOpacity(0.6)
-                  : isToday
-                      ? theme.colorScheme.surfaceContainerHighest
-                      : null,
+              color: isSelected
+                  ? theme.colorScheme.primary.withOpacity(0.85)
+                  : scheduled
+                      ? theme.colorScheme.primaryContainer.withOpacity(0.6)
+                      : isToday
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : null,
               borderRadius: BorderRadius.circular(8),
+              border: isToday && !isSelected
+                  ? Border.all(color: theme.colorScheme.primary, width: 1.2)
+                  : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -279,7 +285,12 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
                 Text('$day',
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: isToday ? FontWeight.bold : null,
+                      fontWeight: isToday || isSelected
+                          ? FontWeight.bold
+                          : null,
+                      color: isSelected
+                          ? theme.colorScheme.onPrimary
+                          : null,
                     )),
                 const SizedBox(height: 2),
                 if (scheduled || done)
@@ -288,10 +299,17 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
                     children: [
                       if (scheduled)
                         Icon(Icons.circle,
-                            size: 6, color: theme.colorScheme.primary),
+                            size: 6,
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.primary),
                       if (scheduled && done) const SizedBox(width: 2),
                       if (done)
-                        const Icon(Icons.check_circle, size: 6, color: Colors.green),
+                        Icon(Icons.check_circle,
+                            size: 6,
+                            color: isSelected
+                                ? theme.colorScheme.onPrimary
+                                : Colors.green),
                     ],
                   ),
               ],
