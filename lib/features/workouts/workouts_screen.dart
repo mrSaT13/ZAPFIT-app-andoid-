@@ -4,6 +4,7 @@ import 'package:endurain/core/services/catalog_service.dart';
 import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/workouts_service.dart';
+import 'package:endurain/features/workouts/ai_plan_screen.dart';
 import 'package:endurain/features/workouts/live_session_screen.dart';
 import 'package:endurain/features/workouts/workout_calendar_service.dart';
 import 'package:endurain/features/workouts/workout_calendar_tab.dart';
@@ -126,6 +127,38 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
     await _refreshData();
   }
 
+  /// Для многодневного плана просит выбрать день; возвращает план,
+  /// ограниченный упражнениями этого дня.
+  Future<WorkoutPlan?> _pickDay(WorkoutPlan plan) async {
+    if (!plan.isMultiDay) return plan;
+    final groups = plan.dayGroups();
+    final day = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text('${plan.name}: день'),
+        children: [
+          for (final label in groups.keys)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, label),
+              child: ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.fitness_center),
+                title: Text(label.isEmpty ? 'Тренировка' : label),
+                subtitle: Text(
+                    '${groups[label]!.length} упражнений · '
+                    '${groups[label]!.map((e) => e.name).take(3).join(', ')}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+            ),
+        ],
+      ),
+    );
+    if (day == null) return null;
+    return plan.forDay(day);
+  }
+
   Future<void> _schedulePlan(WorkoutPlan plan) async {
     final created =
         await WorkoutCalendarService.instance.showScheduleDialog(context, plan);
@@ -151,8 +184,17 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
       if (!mounted) return;
       setState(() => _catalogLoading = false);
     }
+    final picked = await _pickDay(plan);
+    if (picked == null || !mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => LiveSessionScreen(plan: plan)),
+      MaterialPageRoute<void>(builder: (_) => LiveSessionScreen(plan: picked)),
+    );
+    await _refreshData();
+  }
+
+  Future<void> _openAiPlan() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const AiPlanScreen()),
     );
     await _refreshData();
   }
@@ -245,6 +287,25 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            elevation: 0,
+            color: theme.colorScheme.primaryContainer.withOpacity(0.4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.fromLTRB(16, 6, 10, 6),
+              leading: const Icon(Icons.auto_awesome, size: 30),
+              title: const Text('AI-план на недели',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text(
+                  'Опишите цель — нейросеть соберёт программу: недели, дни, упражнения',
+                  style: TextStyle(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _openAiPlan,
+            ),
+          ),
+          const SizedBox(height: 4),
           for (final plan in _plans)
             Card(
               elevation: 0,

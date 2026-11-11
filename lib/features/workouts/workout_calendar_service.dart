@@ -141,20 +141,60 @@ class WorkoutCalendarService {
       ),
     );
     if (ok != true) return 0;
+    return schedulePlanDirect(plan,
+        weekdays: selected, weeks: weeks, time: time, reminderMinutes: reminder);
+  }
 
+  /// Schedules [plan] on the given weekdays for N weeks straight into the
+  /// local schedule table + the system calendar (no dialog).
+  Future<int> schedulePlanDirect(
+    WorkoutPlan plan, {
+    required Set<int> weekdays,
+    required int weeks,
+    TimeOfDay time = const TimeOfDay(hour: 18, minute: 0),
+    int reminderMinutes = 30,
+  }) async {
+    final start = DateTime.now();
     var created = 0;
     for (var w = 0; w < weeks; w++) {
-      for (final weekday in selected) {
+      for (final weekday in weekdays) {
         // первая неделя может начаться не с понедельника: пропускаем прошлое
         var date = start;
         var daysAhead = (weekday - date.weekday) % 7;
         if (daysAhead < 0) daysAhead += 7;
         date = date.add(Duration(days: daysAhead + w * 7));
-        final begin =
-            DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        final end = begin.add(const Duration(hours: 1));
+        await _createEntry(plan, date, time, reminderMinutes);
+        created++;
+      }
+    }
+    return created;
+  }
 
-        var eventId = -1;
+  Future<void> _createEntry(
+    WorkoutPlan plan,
+    DateTime date,
+    TimeOfDay time,
+    int reminder,
+  ) async {
+    final begin =
+        DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final end = begin.add(const Duration(hours: 1));
+
+    var eventId = -1;
+    try {
+      eventId = await _channel.invokeMethod<int>('insertEvent', {
+        'title': 'Тренировка: ${plan.name}',
+        'description': 'ZAPFIT · план «${plan.name}»',
+        'beginMs': begin.millisecondsSinceEpoch,
+        'endMs': end.millisecondsSinceEpoch,
+        'reminderMinutes': reminder,
+      }) ?? -1;
+    } catch (e) {
+      debugPrint('WorkoutCalendarService: insertEvent error: $e');
+    }
+    if (eventId == -1) {
+      // нет разрешения — запросим и попробуем ещё раз один раз
+      if (await ensurePermissions()) {
         try {
           eventId = await _channel.invokeMethod<int>('insertEvent', {
             'title': 'Тренировка: ${plan.name}',
@@ -164,34 +204,16 @@ class WorkoutCalendarService {
             'reminderMinutes': reminder,
           }) ?? -1;
         } catch (e) {
-          debugPrint('WorkoutCalendarService: insertEvent error: $e');
+          debugPrint('WorkoutCalendarService: retry insertEvent error: $e');
         }
-        if (eventId == -1) {
-          // нет разрешения — запросим и попробуем ещё раз один раз
-          if (await ensurePermissions()) {
-            try {
-              eventId = await _channel.invokeMethod<int>('insertEvent', {
-                'title': 'Тренировка: ${plan.name}',
-                'description': 'ZAPFIT · план «${plan.name}»',
-                'beginMs': begin.millisecondsSinceEpoch,
-                'endMs': end.millisecondsSinceEpoch,
-                'reminderMinutes': reminder,
-              }) ?? -1;
-            } catch (e) {
-              debugPrint('WorkoutCalendarService: retry insertEvent error: $e');
-            }
-          }
-        }
-        await _local.addScheduleEntry(
-          planId: plan.id,
-          planName: plan.name,
-          date: date,
-          calendarEventId: eventId > 0 ? eventId : null,
-        );
-        created++;
       }
     }
-    return created;
+    await _local.addScheduleEntry(
+      planId: plan.id,
+      planName: plan.name,
+      date: date,
+      calendarEventId: eventId > 0 ? eventId : null,
+    );
   }
 
   /// Deletes a schedule entry and its system calendar event.

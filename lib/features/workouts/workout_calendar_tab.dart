@@ -159,8 +159,40 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
   }
 
   Future<void> _start(WorkoutPlan plan) async {
+    // многодневный план — выбор дня
+    WorkoutPlan? picked = plan;
+    if (plan.isMultiDay) {
+      final groups = plan.dayGroups();
+      final day = await showDialog<String>(
+        context: context,
+        builder: (ctx) => SimpleDialog(
+          title: Text('${plan.name}: день'),
+          children: [
+            for (final label in groups.keys)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, label),
+                child: ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.fitness_center),
+                  title: Text(label.isEmpty ? 'Тренировка' : label),
+                  subtitle: Text(
+                      '${groups[label]!.length} упражнений · '
+                      '${groups[label]!.map((e) => e.name).take(3).join(', ')}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                ),
+              ),
+          ],
+        ),
+      );
+      if (day == null || !mounted) return;
+      picked = plan.forDay(day);
+    }
+    if (picked == null || !mounted) return;
+    final chosen = picked;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => LiveSessionScreen(plan: plan)),
+      MaterialPageRoute<void>(builder: (_) => LiveSessionScreen(plan: chosen)),
     );
     await _load();
   }

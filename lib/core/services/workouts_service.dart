@@ -178,6 +178,48 @@ class WorkoutsService {
     return null;
   }
 
+  /// AI plan generator status (same provider as the nutrition assistant).
+  /// Returns null on network errors.
+  Future<({bool available, String? model})?> aiStatus() async {
+    try {
+      final response = await _apiClient.get('$_basePath/ai/status');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return (
+          available:
+              (data['enabled'] as bool? ?? false) && (data['configured'] as bool? ?? false),
+          model: data['model'] as String?,
+        );
+      }
+    } catch (e) {
+      debugPrint('WorkoutsService: aiStatus error: $e');
+    }
+    return null;
+  }
+
+  /// Generates a multi-day plan draft from a free-text goal
+  /// (`POST /workouts/ai/plan`). The draft is NOT saved — the caller shows it
+  /// for review and then creates the plan via [createPlan].
+  Future<AiPlanDraft?> generateAiPlan(String prompt, {String language = 'ru'}) async {
+    try {
+      final response = await _apiClient.post(
+        '$_basePath/ai/plan',
+        body: {'prompt': prompt, 'language': language},
+      );
+      if (response.statusCode == 200) {
+        return AiPlanDraft.fromJson(
+            json.decode(response.body) as Map<String, dynamic>);
+      }
+      debugPrint('WorkoutsService: generateAiPlan status ${response.statusCode}');
+      if (response.statusCode == 503) {
+        debugPrint('WorkoutsService: AI provider not configured on server');
+      }
+    } catch (e) {
+      debugPrint('WorkoutsService: generateAiPlan error: $e');
+    }
+    return null;
+  }
+
   /// Pushes unsynced local sessions; returns how many were confirmed.
   Future<int> syncPending() async {
     final pending = await _local.pendingSessions();

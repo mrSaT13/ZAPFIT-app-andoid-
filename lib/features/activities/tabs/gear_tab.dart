@@ -96,10 +96,10 @@ class _GearTabState extends State<GearTab> {
                   // Prefer photo with existing file (offline cache covers server images)
                   dynamic photo;
                   for (final p in photos) {
-                    if (File(p.filePath).existsSync()) { photo = p; break; }
+                    if (File(p.filePath as String).existsSync()) { photo = p; break; }
                   }
                   photo ??= photos.first;
-                  final f = File(photo.filePath);
+                  final f = File(photo.filePath as String);
                   if (f.existsSync()) {
                     return ClipOval(
                       child: SizedBox(

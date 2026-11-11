@@ -105,6 +105,134 @@ class WorkoutPlan {
     }
     return null;
   }
+
+  /// Exercises grouped by day_label (preserving order). Single-day plans get
+  /// one group labelled ''.
+  Map<String, List<WorkoutPlanExercise>> dayGroups() {
+    final groups = <String, List<WorkoutPlanExercise>>{};
+    for (final e in exercises) {
+      groups.putIfAbsent(e.dayLabel ?? '', () => []).add(e);
+    }
+    return groups;
+  }
+
+  /// True when the plan spans more than one training day.
+  bool get isMultiDay => dayGroups().length > 1;
+
+  /// A copy of this plan limited to one day's exercises (for live sessions).
+  WorkoutPlan forDay(String dayLabel) => WorkoutPlan(
+        id: id,
+        userId: userId,
+        name: dayLabel.isEmpty ? name : '$name · $dayLabel',
+        description: description,
+        source: source,
+        exercises: (dayGroups()[dayLabel] ?? exercises)
+            .asMap()
+            .entries
+            .map((e) => WorkoutPlanExercise(
+                  id: e.value.id,
+                  position: e.key,
+                  dayLabel: e.value.dayLabel,
+                  name: e.value.name,
+                  muscleGroup: e.value.muscleGroup,
+                  wgerExerciseId: e.value.wgerExerciseId,
+                  notes: e.value.notes,
+                  targetSets: e.value.targetSets,
+                  targetReps: e.value.targetReps,
+                  targetWeightKg: e.value.targetWeightKg,
+                  restSeconds: e.value.restSeconds,
+                ))
+            .toList(),
+      );
+}
+
+/// AI-generated plan draft (server `POST /workouts/ai/plan`).
+/// Not saved anywhere until the user confirms — then it becomes a normal
+/// [WorkoutPlan].
+class AiPlanDraftExercise {
+  final String? dayLabel;
+  final String name;
+  final String? muscleGroup;
+  final int? wgerExerciseId;
+  final String? notes;
+  final int? targetSets;
+  final String? targetReps;
+  final double? targetWeightKg;
+  final int? restSeconds;
+
+  const AiPlanDraftExercise({
+    this.dayLabel,
+    required this.name,
+    this.muscleGroup,
+    this.wgerExerciseId,
+    this.notes,
+    this.targetSets,
+    this.targetReps,
+    this.targetWeightKg,
+    this.restSeconds,
+  });
+
+  factory AiPlanDraftExercise.fromJson(Map<String, dynamic> j) =>
+      AiPlanDraftExercise(
+        dayLabel: j['day_label'] as String?,
+        name: j['name'] as String? ?? '',
+        muscleGroup: j['muscle_group'] as String?,
+        wgerExerciseId: (j['wger_exercise_id'] as num?)?.toInt(),
+        notes: j['notes'] as String?,
+        targetSets: (j['target_sets'] as num?)?.toInt(),
+        targetReps: j['target_reps'] as String?,
+        targetWeightKg: (j['target_weight_kg'] as num?)?.toDouble(),
+        restSeconds: (j['rest_s'] as num?)?.toInt(),
+      );
+
+  WorkoutPlanExercise toPlanExercise(int position) => WorkoutPlanExercise(
+        position: position,
+        dayLabel: dayLabel,
+        name: name,
+        muscleGroup: muscleGroup,
+        wgerExerciseId: wgerExerciseId,
+        notes: notes,
+        targetSets: targetSets,
+        targetReps: targetReps,
+        targetWeightKg: targetWeightKg,
+        restSeconds: restSeconds,
+      );
+}
+
+class AiPlanDraft {
+  final String name;
+  final String? description;
+  final List<AiPlanDraftExercise> exercises;
+  final String? model;
+
+  const AiPlanDraft({
+    required this.name,
+    this.description,
+    required this.exercises,
+    this.model,
+  });
+
+  factory AiPlanDraft.fromJson(Map<String, dynamic> j) => AiPlanDraft(
+        name: j['name'] as String? ?? 'AI plan',
+        description: j['description'] as String?,
+        model: j['model'] as String?,
+        exercises: (j['exercises'] as List<dynamic>?)
+                ?.map((e) =>
+                    AiPlanDraftExercise.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+      );
+
+  /// Converts the draft into a real plan (positions renumbered 0..n).
+  WorkoutPlan toPlan() => WorkoutPlan(
+        name: name,
+        description: description,
+        source: 'ai',
+        exercises: [
+          for (var i = 0; i < exercises.length; i++)
+            exercises[i].toPlanExercise(i),
+        ],
+      );
 }
 
 class WorkoutSetLog {

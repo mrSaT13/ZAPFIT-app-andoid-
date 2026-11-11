@@ -545,6 +545,13 @@ class _ActivityFeedCardState extends State<_ActivityFeedCard> {
       case ActivityKind.roadCycling: return Icons.directions_bike;
       case ActivityKind.walk: return Icons.directions_walk;
       case ActivityKind.hike: return Icons.terrain;
+      case ActivityKind.strengthTraining:
+      case ActivityKind.crossfit:
+      case ActivityKind.generalWorkout:
+      case ActivityKind.cardioTraining:
+      case ActivityKind.hiit:
+      case ActivityKind.yoga:
+        return Icons.fitness_center;
       default: return Icons.sports_score;
     }
   }
