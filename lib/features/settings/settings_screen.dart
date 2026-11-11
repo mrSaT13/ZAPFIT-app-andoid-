@@ -1090,6 +1090,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
         const SizedBox(height: 12),
+        // Strength workouts section
+        const Text('Силовые тренировки', style: TextStyle(fontWeight: FontWeight.bold)),
+        SwitchListTile(
+          title: const Text('Автосинхронизация силовых тренировок'),
+          subtitle: const Text(
+              'Отправлять сессию на сервер сразу после завершения live-записи '
+              '(выключено — сохраняется локально и уходит позже)'),
+          value: _settings.strengthAutoSyncEnabled,
+          onChanged: (v) => _settings.setStrengthAutoSyncEnabled(v),
+        ),
+        const SizedBox(height: 12),
         ListTile(
           leading: const Icon(Icons.tour, color: Colors.purple),
           title: const Text('Показать тур по приложению'),

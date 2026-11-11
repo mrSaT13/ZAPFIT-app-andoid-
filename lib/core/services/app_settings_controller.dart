@@ -80,6 +80,7 @@ class AppSettingsController extends ChangeNotifier {
 
   // Step counter keys
   static const String _stepsAutoSyncKey = 'steps_auto_sync_enabled';
+  static const String _strengthAutoSyncKey = 'strength_auto_sync_enabled';
   static const String _stepsSyncHourKey = 'steps_sync_hour';
   static const String _stepsLastSyncDateKey = 'steps_last_sync_date';
   static const String _stepsHealthGrantedKey = 'steps_health_permissions_granted';
@@ -176,6 +177,7 @@ class AppSettingsController extends ChangeNotifier {
 
   // Step counter
   bool _stepsAutoSyncEnabled = false;
+  bool _strengthAutoSyncEnabled = false;
   int _stepsSyncHour = 23; // 23:00 by default
   String? _stepsLastSyncDate; // YYYY-MM-DD
   bool _stepsHealthPermissionsGranted = false;
@@ -308,6 +310,7 @@ class AppSettingsController extends ChangeNotifier {
 
   // Step counter getters
   bool get stepsAutoSyncEnabled => _stepsAutoSyncEnabled;
+  bool get strengthAutoSyncEnabled => _strengthAutoSyncEnabled;
   int get stepsSyncHour => _stepsSyncHour;
   String? get stepsLastSyncDate => _stepsLastSyncDate;
   bool get stepsHealthPermissionsGranted => _stepsHealthPermissionsGranted;
@@ -469,6 +472,7 @@ class AppSettingsController extends ChangeNotifier {
 
     // Step counter load
     _stepsAutoSyncEnabled = prefs.getBool(_stepsAutoSyncKey) ?? false;
+    _strengthAutoSyncEnabled = prefs.getBool(_strengthAutoSyncKey) ?? false;
     _stepsSyncHour = prefs.getInt(_stepsSyncHourKey) ?? 23;
     _stepsLastSyncDate = prefs.getString(_stepsLastSyncDateKey);
     _stepsHealthPermissionsGranted = prefs.getBool(_stepsHealthGrantedKey) ?? false;
@@ -933,6 +937,15 @@ class AppSettingsController extends ChangeNotifier {
     _autoSyncEnabled = enabled;
     await _ensurePrefs();
     await _prefs!.setBool(_autoSyncEnabledKey, enabled);
+    notifyListeners();
+  }
+
+  /// Автосинхронизация силовых тренировок: сразу отправлять сессию на сервер
+  /// при завершении live-записи (иначе — в офлайн-очередь).
+  Future<void> setStrengthAutoSyncEnabled(bool enabled) async {
+    _strengthAutoSyncEnabled = enabled;
+    await _ensurePrefs();
+    await _prefs!.setBool(_strengthAutoSyncKey, enabled);
     notifyListeners();
   }
 

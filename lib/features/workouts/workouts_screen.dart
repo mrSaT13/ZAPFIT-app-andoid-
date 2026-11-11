@@ -4,7 +4,7 @@ import 'package:endurain/core/services/catalog_service.dart';
 import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/workouts_service.dart';
-import 'package:endurain/features/workouts/log_session_screen.dart';
+import 'package:endurain/features/workouts/live_session_screen.dart';
 import 'package:endurain/features/workouts/widgets/exercise_plan_editor_dialog.dart';
 
 /// «Тренировки» — the fifth bottom tab: strength plans from the server
@@ -132,7 +132,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
       setState(() => _catalogLoading = false);
     }
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => LogSessionScreen(plan: plan)),
+      MaterialPageRoute<void>(builder: (_) => LiveSessionScreen(plan: plan)),
     );
     await _refreshData();
   }
