@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:endurain/core/services/workouts_local_repository.dart';
+import 'package:endurain/core/services/workouts_service.dart';
 import 'package:endurain/core/services/catalog_service.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/features/workouts/live_session_screen.dart';
@@ -35,6 +38,8 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
+    // Двусторонний синх расписания с сервером (тихо; офлайн безопасно).
+    unawaited(WorkoutsService.instance.syncSchedule());
     final first = DateTime(_month.year, _month.month, 1);
     final last = DateTime(_month.year, _month.month + 1, 0);
     try {

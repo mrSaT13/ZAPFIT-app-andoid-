@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/workouts_local_repository.dart';
+import 'package:endurain/core/services/workouts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Workout plan scheduling: writes plan entries into the local plan_schedule
@@ -214,6 +217,7 @@ class WorkoutCalendarService {
       date: date,
       calendarEventId: eventId > 0 ? eventId : null,
     );
+    unawaited(WorkoutsService.instance.syncSchedule());
   }
 
   /// Deletes a schedule entry and its system calendar event.
@@ -227,6 +231,7 @@ class WorkoutCalendarService {
       }
     }
     await _local.removeScheduleEntry(entry['id'] as int);
+    unawaited(WorkoutsService.instance.syncSchedule());
   }
 
   static String _fmtDate(DateTime d) =>

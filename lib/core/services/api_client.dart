@@ -24,6 +24,8 @@ class ApiClient {
 
   Future<http.Response> get(String endpoint) => _makeRequest('GET', endpoint);
   Future<http.Response> post(String endpoint, {Map<String, dynamic>? body}) => _makeRequest('POST', endpoint, body: body);
+  /// Same as [post] but for JSON-array payloads.
+  Future<http.Response> postJson(String endpoint, {Object? body}) => _makeRequest('POST', endpoint, rawBody: body);
   Future<http.Response> put(String endpoint, {Map<String, dynamic>? body}) => _makeRequest('PUT', endpoint, body: body);
   Future<http.Response> patch(String endpoint, {Map<String, dynamic>? body}) => _makeRequest('PATCH', endpoint, body: body);
   Future<http.Response> delete(String endpoint) => _makeRequest('DELETE', endpoint);
@@ -32,6 +34,7 @@ class ApiClient {
     String method,
     String endpoint, {
     Map<String, dynamic>? body,
+    Object? rawBody,
   }) async {
     final serverUrl = await _storage.getServerUrl();
     if (serverUrl == null || serverUrl.isEmpty) throw Exception('Server URL not configured');
@@ -46,7 +49,7 @@ class ApiClient {
     }
 
     var headers = await _getHeaders();
-    http.Response response = await _executeRequest(method, url, headers, body: body);
+    http.Response response = await _executeRequest(method, url, headers, body: body ?? rawBody);
 
     if (response.statusCode == 401) {
       debugPrint('ApiClient: 401 error on $endpoint. Attempting token refresh...');
@@ -54,7 +57,7 @@ class ApiClient {
       if (refreshed) {
         debugPrint('ApiClient: Token refreshed. RETRYING request with NEW headers...');
         headers = await _getHeaders(); // IMPORTANT: Get headers with the fresh token
-        response = await _executeRequest(method, url, headers, body: body);
+        response = await _executeRequest(method, url, headers, body: body ?? rawBody);
       }
     }
 
@@ -87,7 +90,7 @@ class ApiClient {
     return headers;
   }
 
-  Future<http.Response> _executeRequest(String method, Uri url, Map<String, String> headers, {Map<String, dynamic>? body}) async {
+  Future<http.Response> _executeRequest(String method, Uri url, Map<String, String> headers, {Object? body}) async {
     try {
       final bodyStr = body != null ? json.encode(body) : null;
       Future<http.Response> request;

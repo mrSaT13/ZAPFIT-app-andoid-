@@ -134,6 +134,12 @@ class WorkoutsLocalRepository {
     });
   }
 
+  /// All schedule rows (no date filter) — used by the server sync.
+  Future<List<Map<String, dynamic>>> listAllSchedule() async {
+    final db = await _database;
+    return db.query('plan_schedule', orderBy: 'date ASC, id ASC');
+  }
+
   /// Schedule entries within [dateFrom, dateTo] (inclusive, YYYY-MM-DD strings).
   Future<List<Map<String, dynamic>>> listSchedule({
     required String dateFrom,

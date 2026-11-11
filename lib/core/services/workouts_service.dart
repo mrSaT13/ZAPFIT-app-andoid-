@@ -238,4 +238,62 @@ class WorkoutsService {
     }
     return confirmed;
   }
+
+  /// Two-way sync of the workout schedule (planned dates) with the server:
+  /// pushes local ``plan_schedule`` rows the server doesn't have and removes
+  /// server rows deleted locally. Match key is (plan_id, date). Offline-safe:
+  /// any failure is swallowed and retried on the next call.
+  Future<void> syncSchedule() async {
+    try {
+      final local = await _local.listAllSchedule();
+      String keyOf(planId, date) => '${planId ?? 0}|$date';
+      final localKeys = {
+        for (final r in local) keyOf(r['plan_id'] as int?, r['date'] as String),
+      };
+
+      final response = await _apiClient.get('$_basePath/schedule');
+      List<Map<String, dynamic>> server = [];
+      if (response.statusCode == 200) {
+        server = (json.decode(response.body) as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+      } else {
+        debugPrint('WorkoutsService: syncSchedule GET status ${response.statusCode}');
+        return;
+      }
+
+      // Push local rows missing on the server.
+      final serverKeys = {
+        for (final s in server) keyOf(s['plan_id'] as int?, s['date'] as String),
+      };
+      final toPush = <Map<String, dynamic>>[
+        for (final r in local)
+          if (!serverKeys.contains(keyOf(r['plan_id'] as int?, r['date'] as String)))
+            {
+              'plan_id': r['plan_id'],
+              'plan_name': r['plan_name'],
+              'date': r['date'],
+              'completed': false,
+            },
+      ];
+      if (toPush.isNotEmpty) {
+        final push = await _apiClient.postJson('$_basePath/schedule', body: toPush);
+        if (push.statusCode != 201) {
+          debugPrint('WorkoutsService: syncSchedule POST status ${push.statusCode}');
+        }
+      }
+
+      // Remove server rows deleted locally.
+      for (final s in server) {
+        if (!localKeys.contains(keyOf(s['plan_id'] as int?, s['date'] as String))) {
+          try {
+            await _apiClient.delete('$_basePath/schedule/${s['id']}');
+          } catch (e) {
+            debugPrint('WorkoutsService: syncSchedule DELETE error: $e');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('WorkoutsService: syncSchedule error: $e');
+    }
+  }
 }
