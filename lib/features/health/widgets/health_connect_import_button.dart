@@ -43,11 +43,14 @@ class HealthConnectImportButton extends StatelessWidget {
       return;
     }
 
-    // Try to get permissions
+    // Try to get permissions; if partially granted — open the HC grant screen
     debugPrint('ImportButton: requesting permissions...');
-    final hasPerms = await hc.hasPermissions();
+    var hasPerms = await hc.hasPermissions();
     debugPrint('ImportButton: hasPermissions = $hasPerms');
-    
+    if (!hasPerms && context.mounted) {
+      hasPerms = await hc.requestPermissions();
+      debugPrint('ImportButton: after requestPermissions = $hasPerms');
+    }
     if (!hasPerms) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

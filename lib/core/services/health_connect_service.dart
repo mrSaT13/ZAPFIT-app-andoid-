@@ -76,6 +76,20 @@ class HealthConnectService {
   /// Kept for backward compatibility. Prefer [checkPermissions].
   Future<bool> hasPermissions() => checkPermissions();
 
+  /// Opens the Health Connect grant screen for all types (incl. new HRV).
+  /// Fixes the silent-false case when permissions are partially granted.
+  Future<bool> requestPermissions() async {
+    try {
+      final granted = await _h.requestAuthorization(_hcTypes, permissions: _hcPerms);
+      _hasPermissions = granted ?? false;
+      if (_hasPermissions) _isAvailable = true;
+      return _hasPermissions;
+    } catch (e) {
+      debugPrint('HealthConnect: requestAuthorization error: $e');
+      return false;
+    }
+  }
+
   Future<List<SleepRecord>> fetchSleep({
     DateTime? start,
     DateTime? end,

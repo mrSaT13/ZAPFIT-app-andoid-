@@ -153,7 +153,8 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
                   TextButton(
                     onPressed: () async {
                       final hc = HealthConnectService.instance;
-                      final ok = await hc.checkPermissions(force: true);
+                      var ok = await hc.checkPermissions(force: true);
+                      if (!ok) ok = await hc.requestPermissions();
                       if (ok) {
                         setState(() => _hcPermsGranted = true);
                         await _healthService.autoImportFromHealthConnect(daysBack: 30, force: true);
