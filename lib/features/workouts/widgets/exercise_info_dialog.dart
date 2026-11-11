@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:endurain/core/models/catalog_models.dart';
 import 'package:endurain/core/services/catalog_service.dart';
+import 'package:endurain/core/services/exercise_media_service.dart';
 import 'package:endurain/core/services/workouts_service.dart';
 
 /// "How to perform" — bottom-sheet with the catalog description + technique
@@ -121,6 +122,9 @@ class _ExerciseInfoSheetState extends State<_ExerciseInfoSheet> {
                 if (muscles.isNotEmpty) Chip(label: Text(muscles, style: const TextStyle(fontSize: 12))),
               ],
             ),
+            const SizedBox(height: 12),
+            // Анимация упражнения (GIF с сервера, кэш на диске).
+            Center(child: ExerciseGif(wgerId: ex.id)),
             const SizedBox(height: 12),
             if (desc != null && desc.isNotEmpty) ...[
               Text('Как выполнять', style: Theme.of(context).textTheme.titleSmall),
