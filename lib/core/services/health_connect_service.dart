@@ -19,6 +19,7 @@ class HealthConnectService {
     HealthDataType.SLEEP_REM,
     HealthDataType.SLEEP_AWAKE,
     HealthDataType.HEART_RATE,
+    HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
     HealthDataType.STEPS,
     HealthDataType.WEIGHT,
   ];
@@ -289,6 +290,42 @@ class HealthConnectService {
       return result;
     } catch (e) {
       debugPrint('HealthConnect: fetch HR error: $e');
+      return [];
+    }
+  }
+
+  /// HRV (RMSSD, мс) из Health Connect. Возвращает точки по timestamp.
+  Future<List<MapEntry<DateTime, double>>> fetchHrv({
+    DateTime? start,
+    DateTime? end,
+  }) async {
+    if (!_hasPermissions) {
+      final ok = await hasPermissions();
+      if (!ok) return [];
+    }
+
+    final now = DateTime.now();
+    final startTime = start ?? now.subtract(const Duration(days: 7));
+    final endTime = end ?? now;
+
+    try {
+      final hc = Health();
+      final hrvData = await hc.getHealthDataFromTypes(
+        types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD],
+        startTime: startTime,
+        endTime: endTime,
+      );
+      debugPrint('HealthConnect: raw HRV records = ${hrvData.length}');
+      final result = <MapEntry<DateTime, double>>[];
+      for (final data in hrvData) {
+        final v = (data.value as NumericHealthValue).numericValue;
+        if (v > 0 && v < 500) {
+          result.add(MapEntry(data.dateFrom.toLocal(), v.toDouble()));
+        }
+      }
+      return result;
+    } catch (e) {
+      debugPrint('HealthConnect: fetch HRV error: $e');
       return [];
     }
   }

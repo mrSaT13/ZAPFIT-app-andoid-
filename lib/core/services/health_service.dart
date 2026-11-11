@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/models/workouts_models.dart';
+import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/services/api_client.dart';
 import 'package:endurain/core/services/endurain_uploader.dart';
 import 'package:endurain/core/services/local_activity_repository.dart';
@@ -33,6 +35,8 @@ class HealthService extends ChangeNotifier {
   List<WaterRecord> _waterRecords = [];
   List<StepsRecord> _stepsRecords = [];
   List<HeartRateRecord> _heartRateRecords = [];
+  List<WorkoutSession> _workoutSessions = [];
+  double? _latestHrvRmssd;
 
   // Getters
   double get syncProgress => _syncProgress;
@@ -46,6 +50,8 @@ class HealthService extends ChangeNotifier {
   List<WaterRecord> get waterRecords => _waterRecords;
   List<StepsRecord> get stepsRecords => _stepsRecords;
   List<HeartRateRecord> get heartRateRecords => _heartRateRecords;
+  List<WorkoutSession> get workoutSessions => _workoutSessions;
+  double? get latestHrvRmssd => _latestHrvRmssd;
   bool get isLoading => _isLoading;
 
   @override
@@ -68,6 +74,11 @@ class HealthService extends ChangeNotifier {
     _waterRecords = await _repository.getWaterRecords();
     _stepsRecords = await _repository.getStepsRecords();
     _heartRateRecords = await _repository.getHeartRateRecords();
+    try {
+      _workoutSessions = await WorkoutsLocalRepository.instance.listSessions();
+    } catch (e) {
+      debugPrint('HealthService: workout sessions load error: $e');
+    }
     
     // Compute HR statistics from sleep records
     _computeSleepHrStatistics();
@@ -337,12 +348,61 @@ class HealthService extends ChangeNotifier {
         }
       }
 
+      // Import HRV (RMSSD) — latest value for recovery/stress metrics
+      try {
+        final hrvData = await hc.fetchHrv(start: start, end: now);
+        if (hrvData.isNotEmpty) {
+          _latestHrvRmssd = hrvData.last.value;
+          debugPrint('HealthConnect: HRV rmssd = $_latestHrvRmssd');
+        }
+      } catch (e) {
+        debugPrint('HealthConnect: HRV import error: $e');
+      }
+
       await loadLocalData();
       await syncAll();
       debugPrint('HealthConnect: auto-import complete');
     } catch (e) {
       debugPrint('HealthConnect: auto-import error: $e');
       await loadLocalData();
+    }
+  }
+
+  DateTime? _lastQuickImportTime;
+  static const _quickImportInterval = Duration(minutes: 2);
+
+  /// Лёгкий быстрый импорт «сегодня»: шаги + пульс + вес за 2 дня.
+  /// Короткий троттл (2 мин) — вызывается при открытии вкладки Здоровье
+  /// и по таймеру, чтобы шаги/пульс свежали без ручных кнопок.
+  Future<void> quickImportFromHealthConnect({bool force = false}) async {
+    final now = DateTime.now();
+    if (!force &&
+        _lastQuickImportTime != null &&
+        now.difference(_lastQuickImportTime!) < _quickImportInterval) {
+      return;
+    }
+    _lastQuickImportTime = now;
+    try {
+      final hc = HealthConnectService.instance;
+      if (!await hc.hasPermissions()) return;
+
+      final start = DateTime(now.year, now.month, now.day)
+          .subtract(const Duration(days: 2));
+      final stepsData = await hc.fetchSteps(start: start, end: now);
+      for (final record in stepsData) {
+        await _repository.upsertStepsRecord(record);
+      }
+      final hrData = await hc.fetchHeartRate(start: start, end: now);
+      for (final record in hrData) {
+        await _repository.upsertHeartRateRecord(record);
+      }
+      final weightData = await hc.fetchWeight(start: start, end: now);
+      if (weightData.isNotEmpty) {
+        await _repository.upsertWeightRecord(weightData.last);
+      }
+      await loadLocalData();
+    } catch (e) {
+      debugPrint('HealthConnect: quick-import error: $e');
     }
   }
 

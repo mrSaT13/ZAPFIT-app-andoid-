@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:endurain/core/services/health_service.dart';
@@ -28,6 +29,7 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
   late TabController _tabController;
   final HealthService _healthService = serviceLocator<HealthService>();
   bool _hcPermsGranted = false;
+  Timer? _quickRefreshTimer;
 
   @override
   void initState() {
@@ -49,6 +51,13 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
       } catch (e) {
         debugPrint('HealthService: syncAll error: $e');
       }
+
+      // Быстрый импорт шагов/пульса сразу при открытии + каждые 3 мин,
+      // пока вкладка открыта — шаги обновляются без ручных кнопок.
+      _healthService.quickImportFromHealthConnect();
+      _quickRefreshTimer = Timer.periodic(const Duration(minutes: 3), (_) {
+        _healthService.quickImportFromHealthConnect();
+      });
     });
   }
 
@@ -76,11 +85,13 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _refreshPermissions();
+      _healthService.quickImportFromHealthConnect();
     }
   }
 
   @override
   void dispose() {
+    _quickRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
@@ -110,9 +121,9 @@ class _HealthScreenState extends State<HealthScreen> with SingleTickerProviderSt
           ],
           bottom: TabBar(
             controller: _tabController,
-            isScrollable: true,
-            indicatorSize: TabBarIndicatorSize.label,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+            isScrollable: false,
+            indicatorSize: TabBarIndicatorSize.tab,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 2),
             labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
             unselectedLabelStyle: const TextStyle(fontSize: 11),
             tabs: [

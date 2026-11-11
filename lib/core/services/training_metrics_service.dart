@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:endurain/core/models/training_metrics.dart';
 import 'package:endurain/core/models/activity_models.dart';
 import 'package:endurain/core/services/local_activity_repository.dart';
+import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/services/app_settings_controller.dart';
 import 'package:endurain/core/utils/hr_estimator.dart';
 
@@ -130,6 +131,51 @@ class TrainingMetricsService {
     return rows.first['rpe'] as int?;
   }
 
+  /// Силовые тренировки: TSS по методу session-RPE (Фостер).
+  /// Нагрузка = длительность (мин) × средний RPE подходов; к шкале TSS
+  /// приводим делением на 10 (60 мин × RPE 7 → TSS ≈ 42). RPE по умолчанию 6,
+  /// если в подходах не проставлен; без длительности — оценка из калорий.
+  Future<Map<DateTime, double>> _strengthDailyTss(
+    DateTime now, {
+    int lookbackDays = 90,
+  }) async {
+    final daily = <DateTime, double>{};
+    try {
+      final sessions = await WorkoutsLocalRepository.instance.listSessions();
+      for (final s in sessions) {
+        final date = DateTime.tryParse(s.date);
+        if (date == null) continue;
+        final daysAgo = now.difference(date).inDays;
+        if (daysAgo < 0 || daysAgo > lookbackDays) continue;
+
+        double? durationMin = s.durationMin;
+        if ((durationMin == null || durationMin <= 0) &&
+            s.calories != null &&
+            s.calories! > 0) {
+          // Оценка: ~7 ккал/мин силовой
+          durationMin = s.calories! / 7;
+        }
+        if (durationMin == null || durationMin <= 0) continue;
+
+        final rpes = s.sets
+            .map((set) => set.rpe)
+            .whereType<num>()
+            .map((r) => r.toDouble())
+            .toList();
+        final avgRpe = rpes.isNotEmpty
+            ? rpes.reduce((a, b) => a + b) / rpes.length
+            : 6.0;
+
+        final tss = (durationMin * avgRpe / 10).clamp(0.0, 250.0);
+        final dayKey = DateTime(date.year, date.month, date.day);
+        daily[dayKey] = (daily[dayKey] ?? 0) + tss;
+      }
+    } catch (e) {
+      debugPrint('TrainingMetrics: strength TSS error: $e');
+    }
+    return daily;
+  }
+
   /// Рассчитать все метрики формы
   Future<TrainingMetrics> calculateMetrics() async {
     final repo = LocalActivityRepository.instance;
@@ -153,6 +199,12 @@ class TrainingMetricsService {
       final dayKey = DateTime(activity.startedAt.year, activity.startedAt.month, activity.startedAt.day);
       final tss = tssMap[activity.id] ?? calculateTss(activity);
       dailyTss[dayKey] = (dailyTss[dayKey] ?? 0) + tss;
+    }
+
+    // + силовые тренировки (session-RPE)
+    final strengthTss = await _strengthDailyTss(now, lookbackDays: 90);
+    for (final e in strengthTss.entries) {
+      dailyTss[e.key] = (dailyTss[e.key] ?? 0) + e.value;
     }
 
     // CTL: 42-day EWMA
@@ -232,6 +284,12 @@ class TrainingMetricsService {
       dailyTss[dayKey] = (dailyTss[dayKey] ?? 0) + tss;
     }
 
+    // + силовые тренировки (session-RPE)
+    final strengthTss30 = await _strengthDailyTss(now, lookbackDays: 30);
+    for (final e in strengthTss30.entries) {
+      dailyTss[e.key] = (dailyTss[e.key] ?? 0) + e.value;
+    }
+
     final result = <DailyTss>[];
     for (int i = 29; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
@@ -262,6 +320,12 @@ class TrainingMetricsService {
       final dayKey = DateTime(activity.startedAt.year, activity.startedAt.month, activity.startedAt.day);
       final tss = tssMap[activity.id] ?? calculateTss(activity);
       dailyTss[dayKey] = (dailyTss[dayKey] ?? 0) + tss;
+    }
+
+    // + силовые тренировки (session-RPE)
+    final strengthTssChart = await _strengthDailyTss(now, lookbackDays: 90);
+    for (final e in strengthTssChart.entries) {
+      dailyTss[e.key] = (dailyTss[e.key] ?? 0) + e.value;
     }
 
     final result = <Map<String, dynamic>>[];

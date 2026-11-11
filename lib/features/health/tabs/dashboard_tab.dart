@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:endurain/core/services/health_service.dart';
 import 'package:endurain/core/services/app_settings_controller.dart';
 import 'package:endurain/core/models/health_models.dart';
+import 'package:endurain/core/services/bluetooth_sensor_service.dart';
+import 'package:endurain/core/services/nutrition_service.dart';
+import 'package:endurain/core/models/nutrition_models.dart';
 import 'package:endurain/core/utils/vo2max_calculator.dart';
 import 'package:endurain/core/utils/tdee_calculator.dart';
 import 'package:endurain/core/utils/vdot_calculator.dart';
@@ -79,6 +83,8 @@ class HealthDashboardTab extends StatelessWidget {
                 progress: (dashboard?.todaySteps ?? 0) / 10000,
                 onTap: () => onTabRequested(4),
               ),
+              DashboardHeartRateCard(onTap: () => onTabRequested(5)),
+              DashboardNutritionCard(onTap: () => onTabRequested(6)),
               const SizedBox(height: 12),
               _sectionHeader(context, 'МЕТРИКИ ФОРМЫ'),
               const SizedBox(height: 8),
@@ -275,9 +281,31 @@ class HealthDashboardTab extends StatelessWidget {
     }
 
     final bmi = w / ((h / 100) * (h / 100));
+    // Динамический уровень активности: активные минуты за неделю (шаги + силовые)
+    // по рекомендациям ВОЗ: <75 мин = light, <150 = moderately, >=150 = active.
+    final health = serviceLocator<HealthService>();
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+    int weekSteps = 0;
+    for (final r in health.stepsRecords) {
+      if (r.date.isAfter(weekAgo)) weekSteps += r.steps;
+    }
+    final stepsMinutes = StepsConverter.stepsToActiveMinutes(weekSteps);
+    int strengthLoaded = 0;
+    for (final s in health.workoutSessions) {
+      final d = DateTime.tryParse(s.date);
+      if (d != null && d.isAfter(weekAgo)) strengthLoaded += (s.durationMin ?? 0).round();
+    }
+    final weeklyActiveMinutes = stepsMinutes + strengthLoaded;
+    final activityLevel = weeklyActiveMinutes < 75
+        ? ActivityLevel.lightlyActive
+        : weeklyActiveMinutes < 150
+            ? ActivityLevel.moderatelyActive
+            : weeklyActiveMinutes < 300
+                ? ActivityLevel.veryActive
+                : ActivityLevel.extraActive;
     final tdeeResult = TdeeCalculator.calculate(
       weightKg: w, heightCm: h, age: age, gender: gender,
-      activityLevel: ActivityLevel.moderatelyActive,
+      activityLevel: activityLevel,
     );
 
     final vdot = settings.userVo2max > 0 ? settings.userVo2max.toDouble() : 0.0;
@@ -349,7 +377,8 @@ class HealthDashboardTab extends StatelessWidget {
     final restingHr = dash?.latestSleep?.restHeartRate ?? settings.userRestingHeartRate;
     final sleepScore = dash?.latestSleep?.sleepScoreOverall ?? 0;
     final hrvSetting = settings.userHrvRmssd;
-    final double? hrvRmssd = hrvSetting > 0 ? hrvSetting : null;
+    // Приоритет: HRV из Health Connect (автоимпорт), затем ручная настройка.
+    final double? hrvRmssd = health.latestHrvRmssd ?? (hrvSetting > 0 ? hrvSetting : null);
 
     String recoveryValue;
     String recoveryLabel;
@@ -544,6 +573,199 @@ class HealthDashboardTab extends StatelessWidget {
         color: theme.colorScheme.outline,
         letterSpacing: 1.2,
       )),
+    );
+  }
+}
+
+/// Dashboard heart rate card: live BLE BPM when a sensor is connected,
+/// otherwise the latest stored measurement (Health Connect / server).
+class DashboardHeartRateCard extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const DashboardHeartRateCard({super.key, required this.onTap});
+
+  @override
+  State<DashboardHeartRateCard> createState() => _DashboardHeartRateCardState();
+}
+
+class _DashboardHeartRateCardState extends State<DashboardHeartRateCard> {
+  StreamSubscription<int>? _hrSub;
+  int? _liveBpm;
+  bool _live = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hrSub = serviceLocator<BluetoothSensorService>().heartRate.listen((bpm) {
+      if (bpm <= 0) return;
+      if (mounted) setState(() { _liveBpm = bpm; _live = true; });
+    });
+  }
+
+  @override
+  void dispose() {
+    _hrSub?.cancel();
+    super.dispose();
+  }
+
+  Color _hrColor(int bpm) {
+    if (bpm < 60) return Colors.blue;
+    if (bpm < 100) return Colors.green;
+    if (bpm < 140) return Colors.orange;
+    if (bpm < 170) return Colors.deepOrange;
+    return Colors.red;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final latest = serviceLocator<HealthService>().heartRateRecords.isNotEmpty
+        ? serviceLocator<HealthService>().heartRateRecords.first
+        : null;
+
+    final bpm = _live ? _liveBpm : latest?.bpm;
+    final color = bpm != null && bpm > 0 ? _hrColor(bpm) : Colors.grey;
+
+    final subtitle = _live
+        ? 'Датчик подключён — live'
+        : latest != null
+            ? DateFormat('dd.MM.yyyy HH:mm').format(latest.timestamp)
+            : l10n.noData;
+
+    return _buildHrCard(
+      context,
+      title: l10n.healthHeartRate,
+      value: bpm != null && bpm > 0 ? '$bpm bpm' : '--',
+      subtitle: subtitle,
+      icon: Icons.favorite,
+      color: color,
+      onTap: widget.onTap,
+    );
+  }
+
+  Widget _buildHrCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                    Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dashboard nutrition card: today's calories + macros (local cache first,
+/// server summary when reachable).
+class DashboardNutritionCard extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const DashboardNutritionCard({super.key, required this.onTap});
+
+  @override
+  State<DashboardNutritionCard> createState() => _DashboardNutritionCardState();
+}
+
+class _DashboardNutritionCardState extends State<DashboardNutritionCard> {
+  NutritionSummary? _summary;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final now = DateTime.now();
+    final date =
+        '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final service = NutritionService.instance;
+    NutritionSummary? summary;
+    try {
+      summary = await service.fetchSummary(date);
+    } catch (e) {
+      debugPrint('DashboardNutrition: fetchSummary error: $e');
+    }
+    summary ??= await service.localSummary(date);
+    if (mounted) setState(() => _summary = summary);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final s = _summary;
+    final kcal = s?.intakeCalories.round() ?? 0;
+    final subtitle = s != null
+        ? 'Б: ${s.intakeProtein.round()} г · У: ${s.intakeCarbs.round()} г · Ж: ${s.intakeFat.round()} г'
+        : l10n.noData;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.restaurant, color: Colors.orange),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.healthNutrition, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                    Text('$kcal ккал', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -337,7 +337,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
                 ),
                 subtitle: Text(
                   _sessionSummary(s),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -351,9 +351,30 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
     final setCount = s.sets.length;
     final volumeKg =
         s.sets.fold<double>(0, (sum, st) => sum + (st.weightKg ?? 0) * (st.reps ?? 0));
+    final repsCount = s.sets.fold<int>(0, (sum, st) => sum + (st.reps ?? 0));
     final exercises = s.sets.map((st) => st.exerciseName).toSet().length;
+
+    // Нагрузка (session-RPE, Фостер): длительность × средний RPE подходов.
+    final rpes = s.sets
+        .map((st) => st.rpe)
+        .whereType<num>()
+        .map((r) => r.toDouble())
+        .toList();
+    final avgRpe = rpes.isNotEmpty
+        ? rpes.reduce((a, b) => a + b) / rpes.length
+        : null;
+    final durationMin = s.durationMin;
+    final tss = (durationMin != null && durationMin > 0)
+        ? (durationMin * (avgRpe ?? 6.0) / 10)
+        : null;
+
     return 'Упражнений: $exercises · подходов: $setCount'
+        '${repsCount > 0 ? ' · повторов: $repsCount' : ''}'
         '${volumeKg > 0 ? ' · объём ${volumeKg.toStringAsFixed(0)} кг' : ''}'
+        '${durationMin != null && durationMin > 0 ? ' · ${durationMin.toStringAsFixed(0)} мин' : ''}'
+        '${tss != null ? ' · TSS ${tss.toStringAsFixed(0)}' : ''}'
+        '${s.calories != null && s.calories! > 0 ? ' · ${s.calories!.toStringAsFixed(0)} ккал' : ''}'
+        '${avgRpe != null ? ' · RPE ${avgRpe.toStringAsFixed(1)}' : ''}'
         '${s.planId != null ? ' · по плану' : ''}';
   }
 }
