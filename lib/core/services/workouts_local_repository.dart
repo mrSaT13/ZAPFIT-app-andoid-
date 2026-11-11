@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:endurain/core/models/workouts_models.dart';
 
@@ -26,7 +27,7 @@ class WorkoutsLocalRepository {
   static final WorkoutsLocalRepository instance = WorkoutsLocalRepository._();
 
   static const String _dbName = 'workouts.db';
-  static const int _dbVersion = 2;
+  static const int _dbVersion = 3;
 
   Database? _db;
 
@@ -49,6 +50,18 @@ class WorkoutsLocalRepository {
           ''');
           await db.execute(
               'CREATE INDEX IF NOT EXISTS idx_plan_schedule_date ON plan_schedule (date)');
+        }
+        if (oldVersion < 3) {
+          // Кэш on-demand переводов ⓘ — переживает перезапуск приложения.
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS exercise_translations (
+              wger_id INTEGER PRIMARY KEY,
+              description TEXT NOT NULL,
+              tip TEXT,
+              language TEXT NOT NULL DEFAULT 'ru',
+              updated_at TEXT NOT NULL
+            )
+          ''');
         }
       },
       onCreate: (db, version) async {
@@ -87,6 +100,15 @@ class WorkoutsLocalRepository {
         ''');
         await db.execute(
             'CREATE INDEX idx_plan_schedule_date ON plan_schedule (date)');
+        await db.execute('''
+          CREATE TABLE exercise_translations (
+            wger_id INTEGER PRIMARY KEY,
+            description TEXT NOT NULL,
+            tip TEXT,
+            language TEXT NOT NULL DEFAULT 'ru',
+            updated_at TEXT NOT NULL
+          )
+        ''');
       },
     );
     return _db!;
@@ -148,6 +170,40 @@ class WorkoutsLocalRepository {
   Future<void> removeScheduleForPlan(int planId) async {
     final db = await _database;
     await db.delete('plan_schedule', where: 'plan_id = ?', whereArgs: [planId]);
+  }
+
+  // ---- exercise translation cache ----
+
+  /// Cached RU translation for [wgerId] or null.
+  Future<({String description, String? tip})?> loadTranslation(int wgerId) async {
+    final db = await _database;
+    final rows = await db.query('exercise_translations',
+        where: 'wger_id = ?', whereArgs: [wgerId], limit: 1);
+    if (rows.isEmpty) return null;
+    final r = rows.first;
+    final desc = r['description'] as String? ?? '';
+    if (desc.isEmpty) return null;
+    return (description: desc, tip: r['tip'] as String?);
+  }
+
+  Future<void> saveTranslation(
+    int wgerId, {
+    required String description,
+    String? tip,
+    String language = 'ru',
+  }) async {
+    final db = await _database;
+    await db.insert(
+      'exercise_translations',
+      {
+        'wger_id': wgerId,
+        'description': description,
+        'tip': tip,
+        'language': language,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   // ---- plans cache ----

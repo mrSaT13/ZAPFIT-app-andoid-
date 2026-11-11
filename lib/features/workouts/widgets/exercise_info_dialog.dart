@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:endurain/core/models/catalog_models.dart';
 import 'package:endurain/core/services/catalog_service.dart';
 import 'package:endurain/core/services/exercise_media_service.dart';
+import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/services/workouts_service.dart';
 
 /// "How to perform" — bottom-sheet with the catalog description + technique
@@ -33,6 +34,8 @@ class _ExerciseInfoSheet extends StatefulWidget {
 }
 
 class _ExerciseInfoSheetState extends State<_ExerciseInfoSheet> {
+  final WorkoutsLocalRepository _local = WorkoutsLocalRepository.instance;
+
   String? _translatedDesc;
   String? _translatedTip;
   bool _translating = false;
@@ -40,6 +43,27 @@ class _ExerciseInfoSheetState extends State<_ExerciseInfoSheet> {
 
   /// In-memory translations for the session (keyed by wger id).
   static final Map<int, ({String description, String? tip})> _cache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCached();
+  }
+
+  /// Persistent sqflite cache: translations survive app restarts. The
+  /// in-memory map (same session) takes precedence.
+  Future<void> _loadCached() async {
+    if (_cache.containsKey(widget.exercise.id)) return;
+    try {
+      final cached = await _local.loadTranslation(widget.exercise.id);
+      if (cached == null || !mounted) return;
+      _cache[widget.exercise.id] = cached;
+      setState(() {
+        _translatedDesc = cached.description;
+        _translatedTip = cached.tip;
+      });
+    } catch (_) {}
+  }
 
   /// True only when the catalog itself carries a Russian description
   /// (the EN fallback doesn't count — that's exactly when translation helps).
@@ -67,6 +91,10 @@ class _ExerciseInfoSheetState extends State<_ExerciseInfoSheet> {
         _translatedDesc = result.description;
         _translatedTip = result.tip;
       });
+      try {
+        await _local.saveTranslation(widget.exercise.id,
+            description: result.description, tip: result.tip);
+      } catch (_) {}
     } else {
       setState(() => _translateFailed = true);
     }
