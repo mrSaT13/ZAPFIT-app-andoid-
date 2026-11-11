@@ -2,7 +2,7 @@ name: endurain
 description: "ZAPFIT tracking mobile app (fork of Endurain)."
 publish_to: 'none'
 
-version: 0.8.12+42
+version: 0.8.13+43
 
 environment:
   sdk: ^3.0.0
