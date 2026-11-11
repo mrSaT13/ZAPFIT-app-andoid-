@@ -205,6 +205,10 @@ class _WorkoutCalendarTabState extends State<WorkoutCalendarTab> {
       for (var i = 0; i < firstWeekday; i++) null,
       for (var d = 1; d <= daysInMonth; d++) d,
     ];
+    // добиваем последний ряд пустыми ячейками до кратного 7
+    while (cells.length % 7 != 0) {
+      cells.add(null);
+    }
 
     return Card(
       elevation: 0,
