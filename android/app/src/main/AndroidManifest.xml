@@ -7,6 +7,9 @@
 
     <!-- Step counter (pedometer / Health Connect / S-Health на Samsung) -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Тренировочный календарь: прямая вставка событий -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <!-- Legacy для Android 9 (Samsung S10+ и т.п.) -->
     <uses-permission
         android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"

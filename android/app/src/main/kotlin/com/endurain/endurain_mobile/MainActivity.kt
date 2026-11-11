@@ -88,6 +88,72 @@ class MainActivity : FlutterFragmentActivity(), SensorEventListener {
                     Log.e("ZAPFIT", "calendar addEvent error: $e")
                     result.success(false)
                 }
+            } else if (call.method == "insertEvent") {
+                // Direct calendar insert for workout schedule (requires
+                // WRITE_CALENDAR/READ_CALENDAR runtime permissions, requested
+                // from Flutter). Returns the event id, or -1 when permission
+                // is missing so Flutter can request and retry.
+                try {
+                    val title = call.argument<String>("title") ?: ""
+                    val description = call.argument<String>("description") ?: ""
+                    val beginMs = (call.argument<Number>("beginMs") ?: 0).toLong()
+                    val endMs = (call.argument<Number>("endMs") ?: 0).toLong()
+                    val reminderMin = (call.argument<Number>("reminderMinutes") ?: 30).toInt()
+                    if (checkSelfPermission(android.Manifest.permission.WRITE_CALENDAR)
+                            != PackageManager.PERMISSION_GRANTED ||
+                        checkSelfPermission(android.Manifest.permission.READ_CALENDAR)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        result.success(-1)
+                    } else {
+                        val values = android.content.ContentValues().apply {
+                            put(CalendarContract.Events.CALENDAR_ID, 1)
+                            put(CalendarContract.Events.TITLE, title)
+                            put(CalendarContract.Events.DESCRIPTION, description)
+                            put(CalendarContract.Events.DTSTART, beginMs)
+                            put(CalendarContract.Events.DTEND, endMs)
+                            put(CalendarContract.Events.EVENT_TIMEZONE,
+                                java.util.TimeZone.getDefault().id)
+                            put(CalendarContract.Events.EVENT_LOCATION, "ZAPFIT")
+                        }
+                        val uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
+                        val eventId = uri?.lastPathSegment?.toLong() ?: -1L
+                        if (eventId > 0 && reminderMin > 0) {
+                            val reminderValues = android.content.ContentValues().apply {
+                                put(CalendarContract.Reminders.EVENT_ID, eventId)
+                                put(CalendarContract.Reminders.MINUTES, reminderMin)
+                                put(CalendarContract.Reminders.METHOD,
+                                    CalendarContract.Reminders.METHOD_DEFAULT)
+                            }
+                            try {
+                                contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues)
+                            } catch (e: Exception) {
+                                Log.e("ZAPFIT", "calendar reminder error: $e")
+                            }
+                        }
+                        result.success(eventId)
+                    }
+                } catch (e: Exception) {
+                    Log.e("ZAPFIT", "calendar insertEvent error: $e")
+                    result.success(-1)
+                }
+            } else if (call.method == "deleteEvent") {
+                try {
+                    val eventId = (call.argument<Number>("eventId") ?: -1).toLong()
+                    if (eventId > 0 &&
+                        checkSelfPermission(android.Manifest.permission.WRITE_CALENDAR)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        val deleted = contentResolver.delete(
+                            CalendarContract.Events.CONTENT_URI,
+                            "${CalendarContract.Events._ID}=?",
+                            arrayOf(eventId.toString()))
+                        result.success(deleted > 0)
+                    } else {
+                        result.success(false)
+                    }
+                } catch (e: Exception) {
+                    Log.e("ZAPFIT", "calendar deleteEvent error: $e")
+                    result.success(false)
+                }
             } else {
                 result.notImplemented()
             }

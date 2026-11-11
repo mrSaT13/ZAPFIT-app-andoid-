@@ -26,7 +26,7 @@ class WorkoutsLocalRepository {
   static final WorkoutsLocalRepository instance = WorkoutsLocalRepository._();
 
   static const String _dbName = 'workouts.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   Database? _db;
 
@@ -36,6 +36,21 @@ class WorkoutsLocalRepository {
     _db = await openDatabase(
       join(dir, _dbName),
       version: _dbVersion,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS plan_schedule (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              plan_id INTEGER,
+              plan_name TEXT NOT NULL,
+              date TEXT NOT NULL,
+              calendar_event_id INTEGER
+            )
+          ''');
+          await db.execute(
+              'CREATE INDEX IF NOT EXISTS idx_plan_schedule_date ON plan_schedule (date)');
+        }
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE plans (
@@ -61,9 +76,78 @@ class WorkoutsLocalRepository {
           )
         ''');
         await db.execute('CREATE INDEX idx_sessions_synced ON sessions (is_synced)');
+        await db.execute('''
+          CREATE TABLE plan_schedule (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            plan_id INTEGER,
+            plan_name TEXT NOT NULL,
+            date TEXT NOT NULL,
+            calendar_event_id INTEGER
+          )
+        ''');
+        await db.execute(
+            'CREATE INDEX idx_plan_schedule_date ON plan_schedule (date)');
       },
     );
     return _db!;
+  }
+
+  // ---- plan schedule (workout calendar) ----
+
+  static String _fmtDate(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  Future<int> addScheduleEntry({
+    int? planId,
+    required String planName,
+    required DateTime date,
+    int? calendarEventId,
+  }) async {
+    final db = await _database;
+    return db.insert('plan_schedule', {
+      'plan_id': planId,
+      'plan_name': planName,
+      'date': _fmtDate(date),
+      'calendar_event_id': calendarEventId,
+    });
+  }
+
+  /// Schedule entries within [dateFrom, dateTo] (inclusive, YYYY-MM-DD strings).
+  Future<List<Map<String, dynamic>>> listSchedule({
+    required String dateFrom,
+    required String dateTo,
+  }) async {
+    final db = await _database;
+    return db.query(
+      'plan_schedule',
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [dateFrom, dateTo],
+      orderBy: 'date ASC, id ASC',
+    );
+  }
+
+  /// Nearest upcoming entry (today or later) or null.
+  Future<Map<String, dynamic>?> nextScheduled() async {
+    final db = await _database;
+    final rows = await db.query(
+      'plan_schedule',
+      where: 'date >= ?',
+      whereArgs: [_fmtDate(DateTime.now())],
+      orderBy: 'date ASC, id ASC',
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<void> removeScheduleEntry(int id) async {
+    final db = await _database;
+    await db.delete('plan_schedule', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Removes all schedule entries for a plan (e.g. plan deleted).
+  Future<void> removeScheduleForPlan(int planId) async {
+    final db = await _database;
+    await db.delete('plan_schedule', where: 'plan_id = ?', whereArgs: [planId]);
   }
 
   // ---- plans cache ----

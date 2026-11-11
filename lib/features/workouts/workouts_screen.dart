@@ -5,6 +5,8 @@ import 'package:endurain/core/services/workouts_local_repository.dart';
 import 'package:endurain/core/models/workouts_models.dart';
 import 'package:endurain/core/services/workouts_service.dart';
 import 'package:endurain/features/workouts/live_session_screen.dart';
+import 'package:endurain/features/workouts/workout_calendar_service.dart';
+import 'package:endurain/features/workouts/workout_calendar_tab.dart';
 import 'package:endurain/features/workouts/widgets/exercise_plan_editor_dialog.dart';
 
 /// «Тренировки» — the fifth bottom tab: strength plans from the server
@@ -22,7 +24,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
   final WorkoutsLocalRepository _local = WorkoutsLocalRepository.instance;
   final CatalogService _catalog = CatalogService.instance;
 
-  late final TabController _tabs = TabController(length: 2, vsync: this);
+  late final TabController _tabs = TabController(length: 3, vsync: this);
 
   List<WorkoutPlan> _plans = [];
   List<WorkoutSession> _sessions = [];
@@ -121,6 +123,21 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
     await _refreshData();
   }
 
+  Future<void> _schedulePlan(WorkoutPlan plan) async {
+    final created =
+        await WorkoutCalendarService.instance.showScheduleDialog(context, plan);
+    if (!mounted) return;
+    if (created > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Запланировано: $created тренировок (события добавлены в календарь)'),
+        backgroundColor: Colors.green,
+      ));
+    }
+    // таб-индекс 1 = Календарь
+    _tabs.animateTo(1);
+  }
+
   Future<void> _logSession(WorkoutPlan plan) async {
     if (_catalogLoading && !_catalog.isReady) {
       if (!mounted) return;
@@ -160,6 +177,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
         ],
         bottom: TabBar(controller: _tabs, tabs: const [
           Tab(text: 'Планы'),
+          Tab(text: 'Календарь'),
           Tab(text: 'Журнал'),
         ]),
       ),
@@ -181,7 +199,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
             )
           : TabBarView(
               controller: _tabs,
-              children: [_buildPlansTab(theme), _buildJournalTab(theme)],
+              children: [_buildPlansTab(theme), WorkoutCalendarTab(plans: _plans), _buildJournalTab(theme)],
             ),
     );
   }
@@ -242,13 +260,16 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
                         ),
                         PopupMenuButton<String>(
                           onSelected: (v) {
-                            if (v == 'edit') {
+                            if (v == 'schedule') {
+                              _schedulePlan(plan);
+                            } else if (v == 'edit') {
                               _editPlan(plan);
                             } else if (v == 'delete') {
                               _deletePlan(plan);
                             }
                           },
                           itemBuilder: (ctx) => const [
+                            PopupMenuItem(value: 'schedule', child: Text('Запланировать')),
                             PopupMenuItem(value: 'edit', child: Text('Изменить')),
                             PopupMenuItem(value: 'delete', child: Text('Удалить')),
                           ],
