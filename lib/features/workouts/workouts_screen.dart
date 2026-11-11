@@ -29,6 +29,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
   List<WorkoutPlan> _plans = [];
   List<WorkoutSession> _sessions = [];
   int _pendingCount = 0;
+  int _calRefresh = 0; // пересоздать календарь-вкладку при каждом открытии
   bool _loading = true;
   bool _catalogLoading = true;
 
@@ -38,6 +39,8 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
     _tabs.addListener(() {
       if (_tabs.indexIsChanging) return;
       setState(() {}); // FAB switches between "add plan" (hidden in journal).
+      // при открытии вкладки «Календарь» — перечитать расписание
+      if (_tabs.index == 1) setState(() => _calRefresh++);
     });
     _reload();
   }
@@ -199,7 +202,14 @@ class _WorkoutsScreenState extends State<WorkoutsScreen>
             )
           : TabBarView(
               controller: _tabs,
-              children: [_buildPlansTab(theme), WorkoutCalendarTab(plans: _plans), _buildJournalTab(theme)],
+              children: [
+                _buildPlansTab(theme),
+                WorkoutCalendarTab(
+                  key: ValueKey('cal$_calRefresh'),
+                  plans: _plans,
+                ),
+                _buildJournalTab(theme),
+              ],
             ),
     );
   }
