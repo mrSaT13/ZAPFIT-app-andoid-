@@ -42,6 +42,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final TextEditingController _uploadEndpointController = TextEditingController();
   final TextEditingController _apiKeyController = TextEditingController();
+  /// Потеря фокуса тоже сохраняет ключ: вставка из буфера/автозаполнения
+  /// иногда не вызывает onChanged до ухода с экрана.
+  final FocusNode _apiKeyFocus = FocusNode();
   final TextEditingController _cacheFolderController = TextEditingController();
   final TextEditingController _mfaSecretController = TextEditingController();
 
@@ -71,6 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     _uploadEndpointController.text = _settings.uploadEndpoint;
     _apiKeyController.text = _settings.apiKey;
+    _apiKeyFocus.addListener(_onApiKeyFocusLost);
     _cacheFolderController.text = _settings.mapCacheFolder;
 
     _updateControllersFromSettings();
@@ -89,6 +93,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _onProfileChanged() {
     if (mounted) {
       _updateControllersFromSettings();
+    }
+  }
+
+  /// Страховка: ключ сохраняется и при потере фокуса полем.
+  void _onApiKeyFocusLost() {
+    if (_apiKeyFocus.hasFocus) return;
+    final v = _apiKeyController.text.trim();
+    if (v.isNotEmpty && v != _settings.apiKey) {
+      _settings.setApiKey(v);
     }
   }
 
@@ -150,6 +163,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _userService.removeListener(_onProfileChanged);
+    _apiKeyFocus.removeListener(_onApiKeyFocusLost);
+    _apiKeyFocus.dispose();
     _uploadEndpointController.dispose();
     _apiKeyController.dispose();
     _cacheFolderController.dispose();
@@ -1464,6 +1479,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 12),
         TextField(
           controller: _apiKeyController,
+          focusNode: _apiKeyFocus,
           decoration: const InputDecoration(labelText: 'X-API-Key', border: OutlineInputBorder()),
           onChanged: (v) => _settings.setApiKey(v),
         ),
